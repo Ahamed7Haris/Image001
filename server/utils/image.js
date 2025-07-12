@@ -1,10 +1,12 @@
 const sharp = require('sharp');
 const fs = require('fs');
 
-function generateFooterSVG(name, designation, phone, email, textWidth, footerHeight, fontSize) {
+// Generate SVG text near circular photo (on the left)
+function generateFooterSVG(name, designation, phone, textWidth, footerHeight, fontSize) {
   const spacing = fontSize + 6;
-  const startX = 5;
-  const startY = fontSize;
+  const totalHeight = spacing * 3;
+  const centerY = footerHeight / 2 - totalHeight / 2;
+  const startX = 0;
 
   return `
     <svg width="${textWidth}" height="${footerHeight}" xmlns="http://www.w3.org/2000/svg">
@@ -15,13 +17,12 @@ function generateFooterSVG(name, designation, phone, email, textWidth, footerHei
         </linearGradient>
       </defs>
       <style>
-        .text { font-family: Arial, sans-serif; fill: url(#gradText); font-weight: bold; }
+        .text { font-family: Arial, sans-serif; fill: url(#gradText); font-weight: bold; text-anchor: start; }
         .normal { font-size: ${fontSize}px; }
       </style>
-      <text x="${startX}" y="${startY}" class="text normal">Name: ${name}</text>
-      <text x="${startX}" y="${startY + spacing}" class="text normal">Email: ${email}</text>
-      <text x="${startX}" y="${startY + 2 * spacing}" class="text normal">Designation: ${designation}</text>
-      <text x="${startX}" y="${startY + 3 * spacing}" class="text normal">Phone No: ${phone}</text>
+      <text x="${startX}" y="${centerY + spacing * 0}" class="text normal">${name.toUpperCase()}</text>
+      <text x="${startX}" y="${centerY + spacing * 1}" class="text normal">Designation: ${designation}</text>
+      <text x="${startX}" y="${centerY + spacing * 2}" class="text normal">Phone No: ${phone}</text>
     </svg>
   `;
 }
@@ -47,14 +48,19 @@ async function createFinalPoster({ templatePath, person, logoPath, outputPath })
   const templateMetadata = await sharp(templateResized).metadata();
   const width = templateMetadata.width;
 
-  const photoSize = Math.floor(width * 0.15);
+  const photoSize = Math.floor(width * 0.18); // Bigger user photo
   const fontSize = Math.floor(photoSize * 0.14);
   const spacing = fontSize + 6;
-  const textWidth = width - (photoSize * 2) - 100;
+  const textWidth = width * 0.35;
+  const logoSize = Math.floor(width * 0.13);
 
   const footerSVG = generateFooterSVG(
-    person.name, person.designation, person.phone, person.email,
-    textWidth, spacing * 5, fontSize
+    person.name,
+    person.designation,
+    person.phone,
+    textWidth,
+    photoSize,
+    fontSize
   );
 
   const textBuffer = await sharp(Buffer.from(footerSVG)).png().toBuffer();
@@ -73,8 +79,8 @@ async function createFinalPoster({ templatePath, person, logoPath, outputPath })
 
   const resizedLogo = await sharp(logoPath)
     .resize({
-      width: photoSize,
-      height: photoSize,
+      width: logoSize,
+      height: logoSize,
       fit: 'contain',
       background: { r: 240, g: 247, b: 255 }
     })
@@ -82,7 +88,7 @@ async function createFinalPoster({ templatePath, person, logoPath, outputPath })
     .jpeg()
     .toBuffer();
 
-  const footerHeight = Math.max(photoSize, textMetadata.height, photoSize) + 20;
+  const footerHeight = Math.max(photoSize, textMetadata.height, logoSize) + 20;
 
   const gradientFooterBuffer = await sharp({
     create: {
@@ -93,9 +99,12 @@ async function createFinalPoster({ templatePath, person, logoPath, outputPath })
     }
   })
     .composite([
-      { input: circularPhoto, top: Math.floor((footerHeight - photoSize) / 2), left: 50 },
-      { input: textBuffer, top: Math.floor((footerHeight - textMetadata.height) / 2), left: photoSize + 70 },
-      { input: resizedLogo, top: Math.floor((footerHeight - photoSize) / 2), left: width - photoSize - 60 },
+      // Left circular photo
+      { input: circularPhoto, top: Math.floor((footerHeight - photoSize) / 2), left: 40 },
+      // Text beside circular photo
+      { input: textBuffer, top: Math.floor((footerHeight - textMetadata.height) / 2), left: 40 + photoSize + 20 },
+      // Right logo
+      { input: resizedLogo, top: Math.floor((footerHeight - logoSize) / 2), left: width - logoSize - 40 },
     ])
     .jpeg()
     .toBuffer();
