@@ -4,7 +4,7 @@
   "description": "Backend server for personalized bulk email system",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "node server.js",
     "dev": "nodemon server.js"
   },
   "dependencies": {
@@ -16,7 +16,6 @@
     "express": "^4.21.2",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.10.1",
-    "nodeman": "^1.1.2",
     "nodemon": "^3.1.10",
     "sharp": "^0.34.2",
     "xlsx": "^0.18.5"
@@ -28,9 +27,5 @@
     "excel",
     "canvas"
   ],
-  "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "vite": "^7.0.4"
-  }
+  "license": "MIT"
 }
