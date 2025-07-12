@@ -7,6 +7,7 @@ function generateFooterSVG(name, designation, phone, textWidth, footerHeight, fo
   const totalHeight = spacing * 3;
   const centerY = footerHeight / 2 - totalHeight / 2;
   const startX = 0;
+  console.log(name, designation, phone, textWidth, footerHeight, fontSize);
 
   return `
     <svg width="${textWidth}" height="${footerHeight}" xmlns="http://www.w3.org/2000/svg">

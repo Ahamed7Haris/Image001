@@ -7,18 +7,26 @@ import AdminLogin from './components/AdminLogin';
 import AdminPanel from './components/AdminPanel';
 import { useState } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
+import logo from '../logo.png';
+import { useNavigate } from 'react-router-dom';
 
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   return (
-    <nav className="bg-gradient-to-r from-green-400 to-blue-500 shadow-md">
+    <nav className="bg-blue-500 shadow-md">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
+          
+         
           <div className="flex-shrink-0 text-white font-bold text-xl">
-            Abu Portal
+            <img src={logo} alt="Logo" onClick={()=>{ navigate('/'); setOpen(false);
+
+            }} className="h-16 w-16 inline-block mr-2" />
+            ABU PORTAL
           </div>
           <div className="hidden md:flex gap-6">
             <NavLink to="/" label="Home" active={location.pathname === '/'} />
@@ -66,7 +74,10 @@ function App() {
   return (
     <Router>
       <Navbar />
-      <main className="h-[calc(100vh-4rem)] w-full flex items-center justify-center bg-gray-100 overflow-hidden">
+      
+      
+      
+      <main className="h-[calc(100vh-4rem)] w-full flex flex-col items-center justify-center bg-gray-100 overflow-hidden">
         <div className="w-full max-w-2xl mx-auto p-4">
           <Routes>
             <Route path="/" element={<Home />} />

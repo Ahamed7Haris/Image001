@@ -39,14 +39,14 @@ function generateEmailContent(data) {
   const introLine = isHealth
     ? "Your expertise in protecting families is more valuable than ever."
     : isWealth
-    ? "Financial confidence begins with trust — and you’re the bridge to that confidence."
-    : "You help your clients build both security and prosperity — now it's time to amplify your impact.";
+      ? "Financial confidence begins with trust — and you’re the bridge to that confidence."
+      : "You help your clients build both security and prosperity — now it's time to amplify your impact.";
 
   const benefit = isHealth
     ? "This message reminds families of the power of proactive health planning. When shared consistently, it builds confidence and connections."
     : isWealth
-    ? "This message highlights smart monthly income and long-term growth — a perfect conversation starter with new and existing clients."
-    : "This message touches both financial growth and health security — a tool that opens doors for deeper client relationships.";
+      ? "This message highlights smart monthly income and long-term growth — a perfect conversation starter with new and existing clients."
+      : "This message touches both financial growth and health security — a tool that opens doors for deeper client relationships.";
 
   return `
     <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; background-color: #ffffff; padding: 24px; border-radius: 10px; border: 1px solid #e0e0e0;">
@@ -93,10 +93,11 @@ async function sendEmail(data, imagePath) {
       html: htmlContent,
       attachments: [
         {
-          filename: `wealthplus-poster-${data.Name.replace(/\s+/g, '-').toLowerCase()}.png`,
+          filename: 'poster.png',
           path: imagePath,
           cid: 'personalizedCard',
-        },
+          contentType: 'image/png' 
+        }
       ],
     };
 
