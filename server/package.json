@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "body-parser": "^2.2.0",
-    "canvas": "^2.11.2",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "exceljs": "^4.4.0",
