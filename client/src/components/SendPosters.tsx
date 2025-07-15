@@ -53,11 +53,11 @@ const SendPosters: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg ">
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg overflow-scroll">
       <h2 className="text-2xl font-semibold mb-4">Send Personalized Posters</h2>
 
       <form onSubmit={handleSubmit}>
-        <label className="block mb-2 text-sm font-medium  overflow-auto text-gray-700">Choose Designation</label>
+        <label className="block mb-2 text-sm font-medium overflow-auto text-gray-700">Choose Designation</label>
         <select
           className="w-full p-2 mb-4 border rounded"
           value={designation}
@@ -77,8 +77,17 @@ const SendPosters: React.FC = () => {
         />
 
         {preview && (
-          <div className="mb-4 max-h-96 overflow-auto border rounded">
-            <img src={preview} alt="Poster Preview" className="w-full object-contain" />
+          // Adjusted preview container for better responsiveness
+          <div className="mb-4 p-2 border rounded flex justify-center items-center overflow-hidden">
+            <img
+              src={preview}
+              alt="Poster Preview"
+              // `max-w-full` ensures the image doesn't exceed its parent's width.
+              // `h-auto` maintains the aspect ratio.
+              // `object-contain` scales the image to fit within the content box.
+              className="max-w-full h-auto object-contain"
+              style={{ maxHeight: '24rem' }} // Set a max-height using inline style for more control (24rem = 384px)
+            />
           </div>
         )}
 

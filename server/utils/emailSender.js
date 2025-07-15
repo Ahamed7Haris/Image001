@@ -59,9 +59,6 @@ function generateEmailContent(data) {
       <p style="font-size: 16px; line-height: 1.6; color: #444;">
         You can forward this to your customers, share it on WhatsApp, or even use it during client meetings — the possibilities are endless when trust is visual.
       </p>
-      <div style="margin: 20px 0; text-align: center;">
-        <img src="cid:personalizedCard" alt="Poster" style="max-width: 100%; border-radius: 8px; border: 1px solid #ccc;" />
-      </div>
       <div style="font-size: 14px; color: #666; line-height: 1.6; margin-top: 20px;">
         <strong>Your Info:</strong><br/>
         Name: ${Name}<br/>
@@ -95,8 +92,8 @@ async function sendEmail(data, imagePath) {
         {
           filename: 'poster.png',
           path: imagePath,
-          cid: 'personalizedCard',
-          contentType: 'image/png' 
+          // Removed 'cid: personalizedCard' so it's not embedded inline
+          contentType: 'image/png'
         }
       ],
     };
