@@ -39,6 +39,7 @@ const MemberRegistration = () => {
         <select name="designation" className="w-full p-2 border" onChange={handleChange}>
           <option>Health insurance advisor</option>
           <option>Wealth Manager</option>
+          <option>Both</option>
         </select>
         <input name="email" type="email" placeholder="Email" className="w-full p-2 border" onChange={handleChange} />
 

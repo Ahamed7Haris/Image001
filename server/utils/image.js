@@ -4,10 +4,10 @@ const fs = require('fs');
 function generateFooterSVG(name, designation, phone, email, textWidth, footerHeight, fontSize) {
   const spacing = fontSize + 6;
   const startX = 5;
-  const startY = fontSize;
+  const startY = fontSize + 5;
 
   return `
-    <svg width="${textWidth}" height="${footerHeight}" xmlns="http://www.w3.org/2000/svg">
+    <svg width="${textWidth}" height="${footerHeight + 5}" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="gradText" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" style="stop-color:#1B75BB; stop-opacity:1" />
@@ -18,12 +18,22 @@ function generateFooterSVG(name, designation, phone, email, textWidth, footerHei
         .text { font-family: Arial, sans-serif; fill: url(#gradText); font-weight: bold; }
         .normal { font-size: ${fontSize}px; }
       </style>
-      <text x="${startX}" y="${startY}" class="text normal">Name: ${name}</text>
-      <text x="${startX}" y="${startY + spacing}" class="text normal">Email: ${email}</text>
-      <text x="${startX}" y="${startY + 2 * spacing}" class="text normal">Designation: ${designation}</text>
-      <text x="${startX}" y="${startY + 3 * spacing}" class="text normal">Phone No: ${phone}</text>
+      <text x="${startX}" y="${startY + spacing}" class="text normal">${name}</text>
+      <text x="${startX}" y="${startY + 2 * spacing}" class="text normal">${designation} | Wealth Plus</text>
+      <text x="${startX}" y="${startY + 3 * spacing}" class="text normal">Phone: ${phone}</text>
     </svg>
   `;
+}
+
+async function processCircularImage(inputPath, outputPath, size) {
+  const svgCircle = `
+    <svg><circle cx="${size / 2}" cy="${size / 2}" r="${size / 2}" fill="white"/></svg>
+  `;
+  await sharp(inputPath)
+    .resize(size, size)
+    .composite([{ input: Buffer.from(svgCircle), blend: 'dest-in' }])
+    .jpeg()
+    .toFile(outputPath);
 }
 
 async function createFinalPoster({ templatePath, person, logoPath, outputPath }) {
@@ -55,10 +65,12 @@ async function createFinalPoster({ templatePath, person, logoPath, outputPath })
     .png()
     .toBuffer();
 
+  const logoSize = Math.floor((photoSize + 10) * 1.15);
+
   const resizedLogo = await sharp(logoPath)
     .resize({
-      width: photoSize,
-      height: photoSize,
+      width: logoSize,
+      height: logoSize,
       fit: 'contain',
       background: { r: 240, g: 247, b: 255 }
     })
@@ -66,8 +78,20 @@ async function createFinalPoster({ templatePath, person, logoPath, outputPath })
     .jpeg()
     .toBuffer();
 
-  // Dynamically calculate footer height to fit all elements
-  const footerHeight = Math.max(photoSize, textMetadata.height, photoSize) + 20;
+  const footerHeight = Math.max(photoSize, textMetadata.height, logoSize) + 20;
+
+  const lineWidth = 4;
+  const lineHeight = footerHeight - 20;
+  const lineBuffer = await sharp({
+    create: {
+      width: lineWidth,
+      height: lineHeight,
+      channels: 3,
+      background: '#1B75BB'
+    }
+  }).png().toBuffer();
+
+  const logoLeft = width - logoSize - 60;
 
   const gradientFooterBuffer = await sharp({
     create: {
@@ -80,7 +104,8 @@ async function createFinalPoster({ templatePath, person, logoPath, outputPath })
     .composite([
       { input: circularPhoto, top: Math.floor((footerHeight - photoSize) / 2), left: 50 },
       { input: textBuffer, top: Math.floor((footerHeight - textMetadata.height) / 2), left: photoSize + 70 },
-      { input: resizedLogo, top: Math.floor((footerHeight - photoSize) / 2), left: width - photoSize - 60 },
+      { input: lineBuffer, top: Math.floor((footerHeight - lineHeight) / 2), left: logoLeft - 20 },
+      { input: resizedLogo, top: Math.floor((footerHeight - logoSize) / 2), left: logoLeft }
     ])
     .jpeg()
     .toBuffer();
@@ -105,5 +130,6 @@ async function createFinalPoster({ templatePath, person, logoPath, outputPath })
 
 module.exports = {
   generateFooterSVG,
-  createFinalPoster
+  createFinalPoster,
+  processCircularImage
 };

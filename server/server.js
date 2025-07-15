@@ -7,8 +7,19 @@ const nodemailer = require('nodemailer');
 const XLSX = require('xlsx');
 const path = require('path');
 
-const { saveToExcel, getMembersByDesignation } = require('./utils/excel');
-const { processCircularImage, generateFooterSVG, createFinalPoster } = require('./utils/image');
+const {
+  saveToExcel,
+  getMembers,
+  updateMember,
+  deleteMember,
+  getMembersByDesignation
+} = require('./utils/excel');
+
+const {
+  processCircularImage,
+  generateFooterSVG,
+  createFinalPoster
+} = require('./utils/image');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
@@ -18,6 +29,7 @@ const EXCEL_PATH = path.join(OUTPUT_DIR, 'members.xlsx');
 const LOGO_PATH = path.join(__dirname, 'assets/logo.png');
 
 app.use(cors());
+app.use(express.json());
 app.use(express.static('uploads'));
 
 if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
@@ -38,7 +50,13 @@ app.post('/register', upload.single('photo'), async (req, res) => {
     fs.renameSync(req.file.path, finalPhotoPath);
   }
 
-  saveToExcel({ name, phone, email, designation, photo: finalPhotoPath });
+  if (designation === 'Both') {
+    saveToExcel({ name, phone, email, designation: 'Health insurance advisor', photo: finalPhotoPath });
+    saveToExcel({ name, phone, email, designation: 'Wealth Manager', photo: finalPhotoPath });
+  } else {
+    saveToExcel({ name, phone, email, designation, photo: finalPhotoPath });
+  }
+
   res.send('✅ Member registered successfully');
 });
 
@@ -81,6 +99,37 @@ app.post('/send-posters', upload.single('template'), async (req, res) => {
 
   try { fs.unlinkSync(templatePath); } catch (e) {}
   res.send('✅ Posters sent successfully');
+});
+
+app.get('/members', (req, res) => {
+  try {
+    const members = getMembers();
+    res.json(members);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('❌ Error fetching members');
+  }
+});
+
+app.post('/update-member', (req, res) => {
+  try {
+    updateMember(req.body);
+    res.send('✅ Member updated successfully');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('❌ Failed to update member');
+  }
+});
+
+app.delete('/delete-member', (req, res) => {
+  const { email, designation } = req.body;
+  try {
+    deleteMember(email, designation);
+    res.send('🗑️ Member deleted successfully');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('❌ Failed to delete member');
+  }
 });
 
 app.listen(3000, () => {
