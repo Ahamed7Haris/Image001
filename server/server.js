@@ -85,29 +85,14 @@ app.post('/api/register', upload.single('photo'), async (req, res) => {
       const userData = { id, name, phone, email, designation, photo: finalPhotoPath, createdAt: new Date().toISOString() };
       saveToExcel(userData);
 
-      let membersToNotify = [];
-      if (designation === 'both') {
-        const health = getMembersByDesignation('Health insurance advisor', EXCEL_PATH);
-        const wealth = getMembersByDesignation('Wealth Manager', EXCEL_PATH);
-        membersToNotify = [...health, ...wealth];
-      } else {
-        membersToNotify = getMembersByDesignation(designation, EXCEL_PATH);
-      }
-
-      for (const member of membersToNotify) {
-        try {
-          await sendEmail({ Name: name, Email: member.email, Phone: phone, Designation: designation }, null, true);
-        } catch (emailErr) {
-          console.error(`Failed to send email to ${member.email}:`, emailErr);
-        }
-      }
+      // No notification emails sent after registration
 
       res.json({ success: true, message: '✅ Member registered successfully', user: userData });
     } catch (err) {
       if (err.message.includes('email is already registered')) {
         res.status(400).json({ error: err.message, details: 'Duplicate email registration' });
       } else {
-        throw err;
+        throw err;yield
       }
     }
   } catch (error) {
@@ -122,31 +107,38 @@ app.post('/api/send-posters', upload.single('template'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'Template image is required' });
     const templatePath = req.file.path;
 
-    let recipients = [];
+    // Remove 'both' option from UI/logic: if designation is 'both', send to both health and wealth
+    let designationsToSend = [];
     if (designation === 'both') {
-      const healthUsers = getMembersByDesignation('Health insurance advisor', EXCEL_PATH);
-      const wealthUsers = getMembersByDesignation('Wealth Manager', EXCEL_PATH);
-      recipients = [...healthUsers, ...wealthUsers];
+      designationsToSend = ['Health insurance advisor', 'Wealth Manager'];
     } else {
-      recipients = getMembersByDesignation(designation, EXCEL_PATH);
+      designationsToSend = [designation];
     }
 
-    if (!recipients.length) return res.status(404).json({ error: `No recipients found for designation: ${designation}` });
-
-    for (const person of recipients) {
-      const finalImagePath = `uploads/final_${Date.now()}_${person.name.replace(/\s+/g, '_')}.jpeg`;
-      try {
-        await createFinalPoster({ templatePath, person, logoPath: LOGO_PATH, outputPath: finalImagePath });
-        await sendEmail({ Name: person.name, Email: person.email, Phone: person.phone, Designation: person.designation }, finalImagePath);
-        try { fs.unlinkSync(finalImagePath); } catch (e) { console.warn(`Cleanup failed for ${person.name}:`, e); }
-      } catch (err) {
-        console.error(`Failed for ${person.name}:`, err);
+    let totalRecipients = 0;
+    for (const desig of designationsToSend) {
+      const recipients = getMembersByDesignation(desig, EXCEL_PATH);
+      if (!recipients.length) continue;
+      totalRecipients += recipients.length;
+      for (const person of recipients) {
+        const finalImagePath = `uploads/final_${Date.now()}_${person.name.replace(/\s+/g, '_')}.jpeg`;
+        try {
+          await createFinalPoster({ templatePath, person, logoPath: LOGO_PATH, outputPath: finalImagePath });
+          await sendEmail({ Name: person.name, Email: person.email, Phone: person.phone, Designation: person.designation }, finalImagePath);
+          try { fs.unlinkSync(finalImagePath); } catch (e) { console.warn(`Cleanup failed for ${person.name}:`, e); }
+        } catch (err) {
+          console.error(`Failed for ${person.name}:`, err);
+        }
       }
     }
 
     try { fs.unlinkSync(templatePath); } catch (e) { console.warn('Template cleanup failed:', e); }
 
-    res.json({ success: true, message: '✅ Posters sent successfully', recipientCount: recipients.length });
+    if (totalRecipients === 0) {
+      return res.status(404).json({ error: `No recipients found for designation: ${designation}` });
+    }
+
+    res.json({ success: true, message: '✅ Posters sent successfully', recipientCount: totalRecipients });
   } catch (error) {
     console.error('Send posters error:', error);
     res.status(500).json({ error: 'Failed to send posters', details: error.message });
@@ -181,6 +173,8 @@ app.put('/api/users/:id', async (req, res) => {
   }
 });
 
-app.listen(3001, () => {
-  console.log('✅ Server running on http://localhost:3001');
+const PORT = process.env.PORT || 3001;
+const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${PORT}`;
+app.listen(PORT, () => {
+  console.log(`✅ Server running on ${BACKEND_URL}`);
 });

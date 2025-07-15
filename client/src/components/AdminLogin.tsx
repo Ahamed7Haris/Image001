@@ -11,7 +11,8 @@ const AdminLogin = () => {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3001/api/admin-login', {
+      const API_URL = import.meta.env.VITE_API_URL;
+      const res = await fetch(`${API_URL}/api/admin-login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
