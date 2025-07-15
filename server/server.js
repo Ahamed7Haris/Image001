@@ -51,7 +51,7 @@ app.post('/register', upload.single('photo'), async (req, res) => {
   }
 
   if (designation === 'Both') {
-    saveToExcel({ name, phone, email, designation: 'Health insurance advisor', photo: finalPhotoPath });
+    saveToExcel({ name, phone, email, designation: 'Health Insurance Advisor', photo: finalPhotoPath });
     saveToExcel({ name, phone, email, designation: 'Wealth Manager', photo: finalPhotoPath });
   } else {
     saveToExcel({ name, phone, email, designation, photo: finalPhotoPath });

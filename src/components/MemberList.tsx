@@ -1,4 +1,3 @@
-// File: src/components/MemberList.tsx
 import { useEffect, useState } from 'react';
 
 interface Member {
@@ -32,8 +31,13 @@ const MemberList = () => {
   };
 
   return (
-    <div className="bg-white shadow p-6 rounded w-full">
-      <h2 className="text-xl font-bold mb-4">Member List</h2>
+    <div className="bg-white shadow p-6 rounded w-full max-w-4xl">
+      <h2 className="text-xl font-bold mb-4">Admin Panel</h2>
+      <div className="flex mb-4 gap-2">
+        <input placeholder="Enter email to search" className="p-2 border rounded w-full" />
+        <button className="bg-blue-600 text-white px-4 py-2 rounded">Search</button>
+        <button className="bg-red-600 text-white px-4 py-2 rounded">Logout</button>
+      </div>
       <table className="w-full text-left border">
         <thead>
           <tr className="bg-gray-100">
@@ -54,14 +58,10 @@ const MemberList = () => {
               <td className="p-2 border">{m.name}</td>
               <td className="p-2 border">{m.email}</td>
               <td className="p-2 border">{m.phone}</td>
-              <td className="p-2 border">{m.designation}</td>
+              <td className="p-2 border text-blue-600">{m.designation}</td>
               <td className="p-2 border">
-                <button
-                  onClick={() => handleDelete(m.email, m.designation)}
-                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                >
-                  Delete
-                </button>
+                <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded mr-2">Edit</button>
+                <button onClick={() => handleDelete(m.email, m.designation)} className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">Delete</button>
               </td>
             </tr>
           ))}

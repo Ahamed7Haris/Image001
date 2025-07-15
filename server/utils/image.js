@@ -2,25 +2,20 @@ const sharp = require('sharp');
 const fs = require('fs');
 
 function generateFooterSVG(name, designation, phone, email, textWidth, footerHeight, fontSize) {
-  const spacing = fontSize + 6;
+  const spacing = fontSize + 2;
   const startX = 5;
-  const startY = fontSize + 5;
+  const startY = fontSize ;
 
   return `
-    <svg width="${textWidth}" height="${footerHeight + 5}" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="gradText" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" style="stop-color:#1B75BB; stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#252A78; stop-opacity:1" />
-        </linearGradient>
-      </defs>
+    <svg width="${textWidth}" height="${footerHeight + 6}" xmlns="http://www.w3.org/2000/svg">
       <style>
-        .text { font-family: Arial, sans-serif; fill: url(#gradText); font-weight: bold; }
+        .text { font-family: Arial, sans-serif; fill: #292d6c; font-weight: bold; }
         .normal { font-size: ${fontSize}px; }
       </style>
-      <text x="${startX}" y="${startY + spacing}" class="text normal">${name}</text>
-      <text x="${startX}" y="${startY + 2 * spacing}" class="text normal">${designation} | Wealth Plus</text>
-      <text x="${startX}" y="${startY + 3 * spacing}" class="text normal">Phone: ${phone}</text>
+      <text x="${startX}" y="${startY + spacing}"  class="text normal">${name}</text>
+      <text x="${startX}" y="${startY + 2.3 * spacing}" class="text normal">${designation} | WealthPlus</text>
+      <text x="${startX}" y="${startY + 3.6 * spacing}" class="text normal">Phone: ${phone}</text>
+      <text x="${startX}" y="${startY + 4.9 * spacing}" class="text normal">IRDAI  Certified Insurance Advisor</text>
     </svg>
   `;
 }
