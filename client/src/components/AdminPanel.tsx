@@ -35,7 +35,7 @@ const AdminPanel = () => {
   const fetchUsers = async () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL;
-      const response = await fetch(`${API_URL}/api/users`);
+      const response = await fetch(`${API_URL}api/users`);
       const data = await response.json();
       setUsers(data);
     } catch (err) {
@@ -56,7 +56,7 @@ const AdminPanel = () => {
     if (!window.confirm('Delete this user?')) return;
 
     try {
-      await fetch(`${API_URL}/api/users/${id}`, {
+      await fetch(`${API_URL}api/users/${id}`, {
         method: 'DELETE',
       });
       setUsers(users.filter(u => u.id !== id));
