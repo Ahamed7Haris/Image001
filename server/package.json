@@ -25,7 +25,8 @@
     "email",
     "bulk",
     "personalized",
-    "excel"
+    "excel",
+    "canvas"
   ],
   "license": "MIT"
 }
