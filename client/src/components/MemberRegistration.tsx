@@ -127,7 +127,8 @@ const MemberRegistration = () => {
                 : formData.designation[0] || ''
             }
             onChange={handleInputChange}
-            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full max-w-[220px] text-sm p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 mx-auto md:text-base md:max-w-full"
+            style={{ maxWidth: 220 }}
           >
             <option value="">Select Designation</option>
             <option value="Health insurance advisor">

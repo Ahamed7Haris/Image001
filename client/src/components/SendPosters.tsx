@@ -60,7 +60,8 @@ const SendPosters: React.FC = () => {
       <form onSubmit={handleSubmit}>
         <label className="block mb-2 text-sm font-medium overflow-auto text-gray-700">Choose Designation</label>
         <select
-          className="w-full p-2 mb-4 border rounded"
+          className="w-full max-w-[220px] text-sm p-2 mb-4 border rounded mx-auto md:text-base md:max-w-full"
+          style={{ maxWidth: 220 }}
           value={designation}
           onChange={(e) => setDesignation(e.target.value)}
         >
