@@ -4,6 +4,11 @@ const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
 const cors = require('cors');
+const allowedOrigins = [
+  'http://localhost:5173',               // For development
+  'https://abuinshah.netlify.app'        // For production
+];
+
 const path = require('path');
 
 const { saveToExcel, getMembersByDesignation, getAllUsers, deleteUser, updateUser } = require('./utils/excel');
@@ -26,10 +31,10 @@ const upload = multer({
 });
 
 
+
 app.use(cors({
-  origin: 'https://abuinshah.netlify.app', // ✅ allow Netlify frontend
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
+  origin: allowedOrigins,
+  credentials: true,
 }));
 
 app.use(express.json());
