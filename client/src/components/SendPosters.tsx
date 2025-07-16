@@ -66,7 +66,7 @@ const SendPosters: React.FC = () => {
         >
           <option value="Health insurance advisor">Health insurance advisor</option>
           <option value="Wealth Manager">Wealth Manager</option>
-          <option value="both">Both</option>
+         
         </select>
 
         <label className="block mb-2 text-sm font-medium text-gray-700">Upload Poster Template</label>

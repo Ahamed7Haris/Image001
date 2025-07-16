@@ -72,7 +72,15 @@ const AdminPanel = () => {
 
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (!editingUser) return;
-    setEditingUser({ ...editingUser, [e.target.name]: e.target.value });
+    // Only allow valid designations
+    if (e.target.name === 'designation') {
+      let value = e.target.value;
+      if (value === 'Health insurance advisor' || value === 'Wealth Manager') {
+        setEditingUser({ ...editingUser, designation: value });
+      }
+    } else {
+      setEditingUser({ ...editingUser, [e.target.name]: e.target.value });
+    }
   };
 
   const handleUpdate = async (e: React.FormEvent) => {

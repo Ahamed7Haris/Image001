@@ -64,7 +64,6 @@ app.post('/api/register', upload.single('photo'), async (req, res) => {
 
     const filenameSafe = name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
     const finalPhotoPath = `uploads/${filenameSafe}_${Date.now()}.jpeg`;
-
     try {
       if (!fs.existsSync(req.file.path)) throw new Error('Uploaded file not found');
       await processCircularImage(req.file.path, finalPhotoPath, 200);
@@ -81,18 +80,26 @@ app.post('/api/register', upload.single('photo'), async (req, res) => {
     }
 
     try {
-      const id = Date.now().toString();
-      const userData = { id, name, phone, email, designation, photo: finalPhotoPath, createdAt: new Date().toISOString() };
-      saveToExcel(userData);
-
-      // No notification emails sent after registration
-
-      res.json({ success: true, message: '✅ Member registered successfully', user: userData });
+      // If designation is 'both', create two profiles
+      if (designation && designation.toLowerCase() === 'both') {
+        const id1 = Date.now().toString();
+        const userData1 = { id: id1, name, phone, email, designation: 'Health Insurance Advisor', photo: finalPhotoPath, createdAt: new Date().toISOString() };
+        saveToExcel(userData1, EXCEL_PATH);
+        const id2 = (Date.now() + 1).toString();
+        const userData2 = { id: id2, name, phone, email, designation: 'Wealth Manager', photo: finalPhotoPath, createdAt: new Date().toISOString() };
+        saveToExcel(userData2, EXCEL_PATH);
+        res.json({ success: true, message: '✅ Two profiles registered successfully', users: [userData1, userData2] });
+      } else {
+        const id = Date.now().toString();
+        const userData = { id, name, phone, email, designation, photo: finalPhotoPath, createdAt: new Date().toISOString() };
+        saveToExcel(userData, EXCEL_PATH);
+        res.json({ success: true, message: '✅ Member registered successfully', user: userData });
+      }
     } catch (err) {
-      if (err.message.includes('email is already registered')) {
+      if (err.message && err.message.includes('email is already registered')) {
         res.status(400).json({ error: err.message, details: 'Duplicate email registration' });
       } else {
-        throw err;yield
+        throw err;
       }
     }
   } catch (error) {
@@ -107,19 +114,30 @@ app.post('/api/send-posters', upload.single('template'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'Template image is required' });
     const templatePath = req.file.path;
 
-    // Remove 'both' option from UI/logic: if designation is 'both', send to both health and wealth
+    // Standardize designations and ensure correct format
     let designationsToSend = [];
-    if (designation === 'both') {
-      designationsToSend = ['Health insurance advisor', 'Wealth Manager'];
+    if (designation.toLowerCase() === 'both') {
+      designationsToSend = ['Health Insurance Advisor', 'Wealth Manager'];
+    } else if (designation.toLowerCase().includes('health')) {
+      designationsToSend = ['Health Insurance Advisor'];
+    } else if (designation.toLowerCase().includes('wealth')) {
+      designationsToSend = ['Wealth Manager'];
     } else {
       designationsToSend = [designation];
     }
 
     let totalRecipients = 0;
     for (const desig of designationsToSend) {
-      const recipients = getMembersByDesignation(desig, EXCEL_PATH);
+      // Use case-insensitive search but maintain correct designation format in output
+      const recipients = getMembersByDesignation(desig.toLowerCase(), EXCEL_PATH)
+        .map(recipient => ({
+          ...recipient,
+          designation: desig // Use the standardized designation format
+        }));
+
       if (!recipients.length) continue;
       totalRecipients += recipients.length;
+      
       for (const person of recipients) {
         const finalImagePath = `uploads/final_${Date.now()}_${person.name.replace(/\s+/g, '_')}.jpeg`;
         try {

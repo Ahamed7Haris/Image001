@@ -10,30 +10,48 @@ const fs = require('fs');
  * - Adjusted vertical spacing for the text block to have equal space above and below.
  */
 function generateFooterSVG(name, designation, phone, textWidth, footerHeight, fontSize) {
-  const spacing = fontSize + 6;
-  const totalHeight = spacing * 4; // Total height occupied by the 4 lines of text
-
-  // Calculate the vertical space available above and below the text block
+  // Add more vertical space between lines for clarity
+  const totalLines = 4;
+  const lineHeight = Math.round(fontSize * 1.5); // Increased line height for more space
+  const totalHeight = lineHeight * totalLines;
   const verticalPadding = (footerHeight - totalHeight) / 2;
+  const startY = verticalPadding + lineHeight * 0.6; // First baseline
+  const textPadding = 2; // Consistent left padding
+  const allFontSize = Math.max(fontSize, 20); // Minimum 18px for clarity
 
-  // The new startY for the first line, ensuring equal padding
-  const startY = verticalPadding + fontSize; // Start from the calculated padding + font size for baseline
+  // Format designation to handle both cases properly
+  let formattedDesignation;
+  if (designation.toLowerCase().includes('wealth')) {
+    formattedDesignation = 'Wealth Manager | WealthPlus';
+  } else if (designation.toLowerCase().includes('health')) {
+    formattedDesignation = 'Health Insurance Advisor | WealthPlus';
+  } else {
+    formattedDesignation = `${designation} | WealthPlus`;
+  }
+
+  let svgLines = [];
+  let y = startY;
+  svgLines.push(`<text x="${textPadding}" y="${y}" class="footertext">${name}</text>`);
+  y += lineHeight;
+  svgLines.push(`<text x="${textPadding}" y="${y}" class="footertext">${formattedDesignation}</text>`);
+  y += lineHeight;
+  svgLines.push(`<text x="${textPadding}" y="${y}" class="footertext">Phone: ${phone}</text>`);
+  y += lineHeight;
+  svgLines.push(`<text x="${textPadding}" y="${y}" class="footertext">IRDAI Certified Insurance Advisor</text>`);
 
   return `
     <svg width="${textWidth}" height="${footerHeight}" xmlns="http://www.w3.org/2000/svg">
       <style>
-        .text {
+        .footertext {
           font-family: Arial, sans-serif;
           fill: #292d6c;
           font-weight: bold;
-          text-anchor: start; /* Text is left-aligned */
+          font-size: ${allFontSize}px;
+          text-anchor: start;
+          dominant-baseline: middle;
         }
-        .normal { font-size: ${fontSize}px; }
       </style>
-      <text x="0" y="${startY}" class="text normal">${name}</text>
-      <text x="0" y="${startY + spacing}" class="text normal">${designation} | WealthPlus</text>
-      <text x="0" y="${startY + 2 * spacing}" class="text normal">Phone: ${phone}</text>
-      <text x="0" y="${startY + 3 * spacing}" class="text normal">IRDAI Certified Insurance Advisor</text>
+      ${svgLines.join('\n')}
     </svg>
   `;
 }
@@ -66,20 +84,22 @@ async function createFinalPoster({ templatePath, person, logoPath, outputPath })
   const width = templateMetadata.width;
 
   const photoSize = Math.floor(width * 0.18);
-  const fontSize = Math.floor(photoSize * 0.14); // Font size remains slightly larger
-  const textWidth = width * 0.40;
-  const logoSize = Math.floor(width * 0.15); // Logo size from previous adjustment
+  const fontSize = Math.round(width * 0.022); // ~18px for 800px width
+  const textWidth = width * 0.48; // More width for text
+  const logoSize = Math.floor(width * 0.15);
 
-  // Ensure footerHeight is sufficiently large to accommodate content
-  const requiredTextHeight = (fontSize + 6) * 4; // 4 lines of text with (fontSize + 6) spacing
-  const footerHeight = Math.max(photoSize, requiredTextHeight, logoSize) + 20;
+  // Footer height: 4 lines, minimal vertical space, plus padding
+  const lineHeight = Math.round(fontSize * 1.18);
+  const requiredTextHeight = lineHeight * 4;
+  const footerHeight = Math.max(photoSize, requiredTextHeight, logoSize) + 18;
 
+  // Always use the exact designation from person.designation (as filtered by send-posters)
   const footerSVG = generateFooterSVG(
     person.name,
     person.designation,
     person.phone,
     textWidth,
-    footerHeight, // Pass the calculated footerHeight to generateFooterSVG
+    footerHeight,
     fontSize
   );
 
@@ -112,18 +132,17 @@ async function createFinalPoster({ templatePath, person, logoPath, outputPath })
   const textLeft = photoLeft + photoSize + 20;
 
   const lineWidth = 4;
-  const lineGap = 40;
+  const lineGap = 32; // Closer to text
 
-  const rightSectionStart = textLeft + textMetadata.width;
+  // Move vertical line and logo closer to text, as in reference
+  const rightSectionStart = textLeft + textMetadata.width + 10;
   const lineX = rightSectionStart + lineGap;
-
-  const spaceAfterLine = width - (lineX + lineWidth);
-  const logoXCentered = lineX + lineWidth + (spaceAfterLine - logoSize) / 2;
+  const logoXCentered = lineX + lineWidth + 32;
 
   const lineY = Math.floor((footerHeight - logoSize) / 2);
-  const lineHeight = logoSize; // Keep line height same as logo height for visual alignment
+  const lineHeightSVG = logoSize;
 
-  const lineSVG = `<svg width="${lineWidth}" height="${lineHeight}" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="${lineWidth}" height="${lineHeight}" fill="#1B75BB"/></svg>`;
+  const lineSVG = `<svg width="${lineWidth}" height="${lineHeightSVG}" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="${lineWidth}" height="${lineHeightSVG}" fill="#1B75BB"/></svg>`;
   const lineBuffer = await sharp(Buffer.from(lineSVG)).png().toBuffer();
 
   const gradientFooterBuffer = await sharp({
