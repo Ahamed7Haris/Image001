@@ -12,7 +12,7 @@ const AdminLogin = () => {
     setLoading(true);
     try {
       const API_URL = import.meta.env.VITE_API_URL;
-      const res = await fetch(`${API_URL}/api/admin-login`, {
+      const res = await fetch(`${API_URL}api/admin-login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
