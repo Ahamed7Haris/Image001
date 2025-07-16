@@ -54,7 +54,7 @@ const SendPosters: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg overflow-scroll">
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg ">
       <h2 className="text-2xl font-semibold mb-4">Send Personalized Posters</h2>
 
       <form onSubmit={handleSubmit}>

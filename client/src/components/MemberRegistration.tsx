@@ -101,10 +101,12 @@ const MemberRegistration = () => {
 
           <input
             name="phone"
-            type="text"
+            type="Number"
             value={formData.phone}
             placeholder="Phone Number"
             onChange={handleInputChange}
+            minLength={10}
+            maxLength={12}
             className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
