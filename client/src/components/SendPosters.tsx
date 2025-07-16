@@ -32,7 +32,8 @@ const SendPosters: React.FC = () => {
     setMessage(null);
 
     try {
-      const res = await fetch('http://localhost:3001/api/send-posters', {
+      const API_URL = import.meta.env.VITE_API_URL;
+      const res = await fetch(`${API_URL}/api/send-posters`, {
         method: 'POST',
         body: formData,
       });
@@ -57,15 +58,16 @@ const SendPosters: React.FC = () => {
       <h2 className="text-2xl font-semibold mb-4">Send Personalized Posters</h2>
 
       <form onSubmit={handleSubmit}>
-        <label className="block mb-2 text-sm font-medium  overflow-auto text-gray-700">Choose Designation</label>
+        <label className="block mb-2 text-sm font-medium overflow-auto text-gray-700">Choose Designation</label>
         <select
-          className="w-full p-2 mb-4 border rounded"
+          className="w-full max-w-[220px] text-sm p-2 mb-4 border rounded mx-auto md:text-base md:max-w-full"
+          style={{ maxWidth: 220 }}
           value={designation}
           onChange={(e) => setDesignation(e.target.value)}
         >
           <option value="Health insurance advisor">Health insurance advisor</option>
           <option value="Wealth Manager">Wealth Manager</option>
-          <option value="both">Both</option>
+         
         </select>
 
         <label className="block mb-2 text-sm font-medium text-gray-700">Upload Poster Template</label>
@@ -77,8 +79,17 @@ const SendPosters: React.FC = () => {
         />
 
         {preview && (
-          <div className="mb-4 max-h-96 overflow-auto border rounded">
-            <img src={preview} alt="Poster Preview" className="w-full object-contain" />
+          // Adjusted preview container for better responsiveness
+          <div className="mb-4 p-2 border rounded flex justify-center items-center overflow-hidden">
+            <img
+              src={preview}
+              alt="Poster Preview"
+              // `max-w-full` ensures the image doesn't exceed its parent's width.
+              // `h-auto` maintains the aspect ratio.
+              // `object-contain` scales the image to fit within the content box.
+              className="max-w-full h-auto object-contain"
+              style={{ maxHeight: '24rem' }} // Set a max-height using inline style for more control (24rem = 384px)
+            />
           </div>
         )}
 

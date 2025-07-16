@@ -64,7 +64,6 @@ app.post('/api/register', upload.single('photo'), async (req, res) => {
 
     const filenameSafe = name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
     const finalPhotoPath = `uploads/${filenameSafe}_${Date.now()}.jpeg`;
-
     try {
       if (!fs.existsSync(req.file.path)) throw new Error('Uploaded file not found');
       await processCircularImage(req.file.path, finalPhotoPath, 200);
@@ -81,30 +80,23 @@ app.post('/api/register', upload.single('photo'), async (req, res) => {
     }
 
     try {
-      const id = Date.now().toString();
-      const userData = { id, name, phone, email, designation, photo: finalPhotoPath, createdAt: new Date().toISOString() };
-      saveToExcel(userData);
-
-      let membersToNotify = [];
-      if (designation === 'both') {
-        const health = getMembersByDesignation('Health insurance advisor', EXCEL_PATH);
-        const wealth = getMembersByDesignation('Wealth Manager', EXCEL_PATH);
-        membersToNotify = [...health, ...wealth];
+      // If designation is 'both', create two profiles
+      if (designation && designation.toLowerCase() === 'both') {
+        const id1 = Date.now().toString();
+        const userData1 = { id: id1, name, phone, email, designation: 'Health Insurance Advisor', photo: finalPhotoPath, createdAt: new Date().toISOString() };
+        saveToExcel(userData1, EXCEL_PATH);
+        const id2 = (Date.now() + 1).toString();
+        const userData2 = { id: id2, name, phone, email, designation: 'Wealth Manager', photo: finalPhotoPath, createdAt: new Date().toISOString() };
+        saveToExcel(userData2, EXCEL_PATH);
+        res.json({ success: true, message: '✅ Two profiles registered successfully', users: [userData1, userData2] });
       } else {
-        membersToNotify = getMembersByDesignation(designation, EXCEL_PATH);
+        const id = Date.now().toString();
+        const userData = { id, name, phone, email, designation, photo: finalPhotoPath, createdAt: new Date().toISOString() };
+        saveToExcel(userData, EXCEL_PATH);
+        res.json({ success: true, message: '✅ Member registered successfully', user: userData });
       }
-
-      for (const member of membersToNotify) {
-        try {
-          await sendEmail({ Name: name, Email: member.email, Phone: phone, Designation: designation }, null, true);
-        } catch (emailErr) {
-          console.error(`Failed to send email to ${member.email}:`, emailErr);
-        }
-      }
-
-      res.json({ success: true, message: '✅ Member registered successfully', user: userData });
     } catch (err) {
-      if (err.message.includes('email is already registered')) {
+      if (err.message && err.message.includes('email is already registered')) {
         res.status(400).json({ error: err.message, details: 'Duplicate email registration' });
       } else {
         throw err;
@@ -122,31 +114,49 @@ app.post('/api/send-posters', upload.single('template'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'Template image is required' });
     const templatePath = req.file.path;
 
-    let recipients = [];
-    if (designation === 'both') {
-      const healthUsers = getMembersByDesignation('Health insurance advisor', EXCEL_PATH);
-      const wealthUsers = getMembersByDesignation('Wealth Manager', EXCEL_PATH);
-      recipients = [...healthUsers, ...wealthUsers];
+    // Standardize designations and ensure correct format
+    let designationsToSend = [];
+    if (designation.toLowerCase() === 'both') {
+      designationsToSend = ['Health Insurance Advisor', 'Wealth Manager'];
+    } else if (designation.toLowerCase().includes('health')) {
+      designationsToSend = ['Health Insurance Advisor'];
+    } else if (designation.toLowerCase().includes('wealth')) {
+      designationsToSend = ['Wealth Manager'];
     } else {
-      recipients = getMembersByDesignation(designation, EXCEL_PATH);
+      designationsToSend = [designation];
     }
 
-    if (!recipients.length) return res.status(404).json({ error: `No recipients found for designation: ${designation}` });
+    let totalRecipients = 0;
+    for (const desig of designationsToSend) {
+      // Use case-insensitive search but maintain correct designation format in output
+      const recipients = getMembersByDesignation(desig.toLowerCase(), EXCEL_PATH)
+        .map(recipient => ({
+          ...recipient,
+          designation: desig // Use the standardized designation format
+        }));
 
-    for (const person of recipients) {
-      const finalImagePath = `uploads/final_${Date.now()}_${person.name.replace(/\s+/g, '_')}.jpeg`;
-      try {
-        await createFinalPoster({ templatePath, person, logoPath: LOGO_PATH, outputPath: finalImagePath });
-        await sendEmail({ Name: person.name, Email: person.email, Phone: person.phone, Designation: person.designation }, finalImagePath);
-        try { fs.unlinkSync(finalImagePath); } catch (e) { console.warn(`Cleanup failed for ${person.name}:`, e); }
-      } catch (err) {
-        console.error(`Failed for ${person.name}:`, err);
+      if (!recipients.length) continue;
+      totalRecipients += recipients.length;
+      
+      for (const person of recipients) {
+        const finalImagePath = `uploads/final_${Date.now()}_${person.name.replace(/\s+/g, '_')}.jpeg`;
+        try {
+          await createFinalPoster({ templatePath, person, logoPath: LOGO_PATH, outputPath: finalImagePath });
+          await sendEmail({ Name: person.name, Email: person.email, Phone: person.phone, Designation: person.designation }, finalImagePath);
+          try { fs.unlinkSync(finalImagePath); } catch (e) { console.warn(`Cleanup failed for ${person.name}:`, e); }
+        } catch (err) {
+          console.error(`Failed for ${person.name}:`, err);
+        }
       }
     }
 
     try { fs.unlinkSync(templatePath); } catch (e) { console.warn('Template cleanup failed:', e); }
 
-    res.json({ success: true, message: '✅ Posters sent successfully', recipientCount: recipients.length });
+    if (totalRecipients === 0) {
+      return res.status(404).json({ error: `No recipients found for designation: ${designation}` });
+    }
+
+    res.json({ success: true, message: '✅ Posters sent successfully', recipientCount: totalRecipients });
   } catch (error) {
     console.error('Send posters error:', error);
     res.status(500).json({ error: 'Failed to send posters', details: error.message });
@@ -181,6 +191,8 @@ app.put('/api/users/:id', async (req, res) => {
   }
 });
 
-app.listen(3001, () => {
-  console.log('✅ Server running on http://localhost:3001');
+const PORT = process.env.PORT || 3001;
+const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${PORT}`;
+app.listen(PORT, () => {
+  console.log(`✅ Server running on ${BACKEND_URL}`);
 });

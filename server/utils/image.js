@@ -1,33 +1,64 @@
 const sharp = require('sharp');
 const fs = require('fs');
 
-// Generate SVG text near circular photo (on the left)
+/**
+ * Generates an SVG containing text information.
+ *
+ * Changes:
+ * - Text is now left-aligned ('text-anchor: start').
+ * - Text remains vertically centered within the footer area.
+ * - Adjusted vertical spacing for the text block to have equal space above and below.
+ */
 function generateFooterSVG(name, designation, phone, textWidth, footerHeight, fontSize) {
-  const spacing = fontSize + 6;
-  const totalHeight = spacing * 3;
-  const centerY = footerHeight / 2 - totalHeight / 2;
-  const startX = 0;
-  console.log(name, designation, phone, textWidth, footerHeight, fontSize);
+  // Add more vertical space between lines for clarity
+  const totalLines = 4;
+  const lineHeight = Math.round(fontSize * 1.5); // Increased line height for more space
+  const totalHeight = lineHeight * totalLines;
+  const verticalPadding = (footerHeight - totalHeight) / 2;
+  const startY = verticalPadding + lineHeight * 0.6; // First baseline
+  const textPadding = 2; // Consistent left padding
+  const allFontSize = Math.max(fontSize, 20); // Minimum 18px for clarity
+
+  // Format designation to handle both cases properly
+  let formattedDesignation;
+  if (designation.toLowerCase().includes('wealth')) {
+    formattedDesignation = 'Wealth Manager | WealthPlus';
+  } else if (designation.toLowerCase().includes('health')) {
+    formattedDesignation = 'Health Insurance Advisor | WealthPlus';
+  } else {
+    formattedDesignation = `${designation} | WealthPlus`;
+  }
+
+  let svgLines = [];
+  let y = startY;
+  svgLines.push(`<text x="${textPadding}" y="${y}" class="footertext">${name}</text>`);
+  y += lineHeight;
+  svgLines.push(`<text x="${textPadding}" y="${y}" class="footertext">${formattedDesignation}</text>`);
+  y += lineHeight;
+  svgLines.push(`<text x="${textPadding}" y="${y}" class="footertext">Phone: ${phone}</text>`);
+  y += lineHeight;
+  svgLines.push(`<text x="${textPadding}" y="${y}" class="footertext">IRDAI Certified Insurance Advisor</text>`);
 
   return `
     <svg width="${textWidth}" height="${footerHeight}" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="gradText" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" style="stop-color:#1B75BB; stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#252A78; stop-opacity:1" />
-        </linearGradient>
-      </defs>
       <style>
-        .text { font-family: Arial, sans-serif; fill: url(#gradText); font-weight: bold; text-anchor: start; }
-        .normal { font-size: ${fontSize}px; }
+        .footertext {
+          font-family: Arial, sans-serif;
+          fill: #292d6c;
+          font-weight: bold;
+          font-size: ${allFontSize}px;
+          text-anchor: start;
+          dominant-baseline: middle;
+        }
       </style>
-      <text x="${startX}" y="${centerY + spacing * 0}" class="text normal">${name.toUpperCase()}</text>
-      <text x="${startX}" y="${centerY + spacing * 1}" class="text normal">Designation: ${designation}</text>
-      <text x="${startX}" y="${centerY + spacing * 2}" class="text normal">Phone No: ${phone}</text>
+      ${svgLines.join('\n')}
     </svg>
   `;
 }
 
+/**
+ * Crops an image into a circle.
+ */
 async function processCircularImage(inputPath, outputPath, size) {
   const circleMask = Buffer.from(
     `<svg width="${size}" height="${size}">
@@ -44,23 +75,31 @@ async function processCircularImage(inputPath, outputPath, size) {
   fs.writeFileSync(outputPath, buffer);
 }
 
+/**
+ * Creates the final composite poster.
+ */
 async function createFinalPoster({ templatePath, person, logoPath, outputPath }) {
   const templateResized = await sharp(templatePath).resize({ width: 800 }).toBuffer();
   const templateMetadata = await sharp(templateResized).metadata();
   const width = templateMetadata.width;
 
-  const photoSize = Math.floor(width * 0.18); // Bigger user photo
-  const fontSize = Math.floor(photoSize * 0.14);
-  const spacing = fontSize + 6;
-  const textWidth = width * 0.35;
-  const logoSize = Math.floor(width * 0.13);
+  const photoSize = Math.floor(width * 0.18);
+  const fontSize = Math.round(width * 0.022); // ~18px for 800px width
+  const textWidth = width * 0.48; // More width for text
+  const logoSize = Math.floor(width * 0.15);
 
+  // Footer height: 4 lines, minimal vertical space, plus padding
+  const lineHeight = Math.round(fontSize * 1.18);
+  const requiredTextHeight = lineHeight * 4;
+  const footerHeight = Math.max(photoSize, requiredTextHeight, logoSize) + 18;
+
+  // Always use the exact designation from person.designation (as filtered by send-posters)
   const footerSVG = generateFooterSVG(
     person.name,
     person.designation,
     person.phone,
     textWidth,
-    photoSize,
+    footerHeight,
     fontSize
   );
 
@@ -89,7 +128,22 @@ async function createFinalPoster({ templatePath, person, logoPath, outputPath })
     .jpeg()
     .toBuffer();
 
-  const footerHeight = Math.max(photoSize, textMetadata.height, logoSize) + 20;
+  const photoLeft = 40;
+  const textLeft = photoLeft + photoSize + 20;
+
+  const lineWidth = 4;
+  const lineGap = 32; // Closer to text
+
+  // Move vertical line and logo closer to text, as in reference
+  const rightSectionStart = textLeft + textMetadata.width + 10;
+  const lineX = rightSectionStart + lineGap;
+  const logoXCentered = lineX + lineWidth + 32;
+
+  const lineY = Math.floor((footerHeight - logoSize) / 2);
+  const lineHeightSVG = logoSize;
+
+  const lineSVG = `<svg width="${lineWidth}" height="${lineHeightSVG}" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="${lineWidth}" height="${lineHeightSVG}" fill="#1B75BB"/></svg>`;
+  const lineBuffer = await sharp(Buffer.from(lineSVG)).png().toBuffer();
 
   const gradientFooterBuffer = await sharp({
     create: {
@@ -100,12 +154,10 @@ async function createFinalPoster({ templatePath, person, logoPath, outputPath })
     }
   })
     .composite([
-      // Left circular photo
-      { input: circularPhoto, top: Math.floor((footerHeight - photoSize) / 2), left: 40 },
-      // Text beside circular photo
-      { input: textBuffer, top: Math.floor((footerHeight - textMetadata.height) / 2), left: 40 + photoSize + 20 },
-      // Right logo
-      { input: resizedLogo, top: Math.floor((footerHeight - logoSize) / 2), left: width - logoSize - 40 },
+      { input: circularPhoto, top: Math.floor((footerHeight - photoSize) / 2), left: photoLeft },
+      { input: textBuffer, top: Math.floor((footerHeight - textMetadata.height) / 2), left: textLeft },
+      { input: lineBuffer, top: lineY, left: lineX },
+      { input: resizedLogo, top: Math.floor((footerHeight - logoSize) / 2), left: logoXCentered },
     ])
     .jpeg()
     .toBuffer();

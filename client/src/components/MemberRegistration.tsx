@@ -54,7 +54,8 @@ const MemberRegistration = () => {
       data.append('designation', formData.designation.join(','));
       data.append('photo', formData.photo);
 
-      const res = await fetch('http://localhost:3001/api/register', {
+      const API_URL = import.meta.env.VITE_API_URL;
+      const res = await fetch(`${API_URL}/api/register`, {
         method: 'POST',
         body: data,
       });
@@ -100,10 +101,12 @@ const MemberRegistration = () => {
 
           <input
             name="phone"
-            type="text"
+            type="Number"
             value={formData.phone}
             placeholder="Phone Number"
             onChange={handleInputChange}
+            minLength={10}
+            maxLength={12}
             className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
@@ -124,7 +127,8 @@ const MemberRegistration = () => {
                 : formData.designation[0] || ''
             }
             onChange={handleInputChange}
-            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full max-w-[220px] text-sm p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 mx-auto md:text-base md:max-w-full"
+            style={{ maxWidth: 220 }}
           >
             <option value="">Select Designation</option>
             <option value="Health insurance advisor">

@@ -34,7 +34,8 @@ const AdminPanel = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/users');
+      const API_URL = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${API_URL}/api/users`);
       const data = await response.json();
       setUsers(data);
     } catch (err) {
@@ -49,11 +50,13 @@ const AdminPanel = () => {
     navigate('/admin-login');
   };
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const handleDelete = async (id: string) => {
     if (!window.confirm('Delete this user?')) return;
 
     try {
-      await fetch(`http://localhost:3001/api/users/${id}`, {
+      await fetch(`${API_URL}/api/users/${id}`, {
         method: 'DELETE',
       });
       setUsers(users.filter(u => u.id !== id));
@@ -69,7 +72,15 @@ const AdminPanel = () => {
 
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (!editingUser) return;
-    setEditingUser({ ...editingUser, [e.target.name]: e.target.value });
+    // Only allow valid designations
+    if (e.target.name === 'designation') {
+      let value = e.target.value;
+      if (value === 'Health insurance advisor' || value === 'Wealth Manager') {
+        setEditingUser({ ...editingUser, designation: value });
+      }
+    } else {
+      setEditingUser({ ...editingUser, [e.target.name]: e.target.value });
+    }
   };
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -77,7 +88,7 @@ const AdminPanel = () => {
     if (!editingUser) return;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/users/${editingUser.id}`, {
+      const response = await fetch(`${API_URL}/api/users/${editingUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editingUser),
@@ -208,7 +219,7 @@ const AdminPanel = () => {
               >
                 {user.photoUrl && (
                   <img
-                    src={`http://localhost:3001/${user.photoUrl}`}
+                    src={`${API_URL}/${user.photoUrl}`}
                     alt={user.name}
                     className="w-16 h-16 rounded-full object-cover border"
                   />

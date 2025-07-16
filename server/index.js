@@ -91,5 +91,6 @@ app.delete('/api/users/:id', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${PORT}`;
+  console.log(`Server running on ${BACKEND_URL}`);
 });

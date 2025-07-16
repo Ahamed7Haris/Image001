@@ -48,16 +48,16 @@ const Navbar = () => {
       </div>
       {open && (
         <div className="md:hidden px-4 pb-4">
-          <NavLink to="/" label="Home" active={location.pathname === '/'} />
-          <NavLink to="/send-poster" label="Send Poster" active={location.pathname === '/send-poster'} />
-          <NavLink to="/register" label="Register Member" active={location.pathname === '/register'} />
+          <NavLink to="/" label="Home"  active={location.pathname === '/'} onClick={() => setOpen(false)} />
+          <NavLink to="/send-poster" label="Send Poster" active={location.pathname === '/send-poster'} onClick={() => setOpen(false)} />
+          <NavLink to="/register" label="Register Member" active={location.pathname === '/register'} onClick={() => setOpen(false)} />
         </div>
       )}
     </nav>
   );
 };
 
-const NavLink = ({ to, label, active }: { to: string; label: string; active: boolean }) => (
+const NavLink = ({ to, label, active, onClick }: { to: string; label: string; active: boolean; onClick?: () => void }) => (
   <Link
     to={to}
     className={`block px-3 py-2 rounded-md text-base font-medium transition ${
@@ -65,6 +65,7 @@ const NavLink = ({ to, label, active }: { to: string; label: string; active: boo
         ? 'bg-white text-blue-600 shadow'
         : 'text-white hover:bg-blue-600 hover:text-white'
     }`}
+    onClick={onClick}
   >
     {label}
   </Link>
@@ -101,4 +102,5 @@ function App() {
 
 export default App;
 
-fetch('http://localhost:3001/api/users')
+const API_URL = import.meta.env.VITE_API_URL;
+fetch(`${API_URL}/api/users`)
