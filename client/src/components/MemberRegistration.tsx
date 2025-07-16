@@ -55,7 +55,7 @@ const MemberRegistration = () => {
       data.append('photo', formData.photo);
 
       const API_URL = import.meta.env.VITE_API_URL;
-      const res = await fetch(`${API_URL}/api/register`, {
+      const res = await fetch(`${API_URL}api/register`, {
         method: 'POST',
         body: data,
       });
