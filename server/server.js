@@ -39,9 +39,8 @@ app.use(cors({
 
 app.use(express.json());
 
-app.options('*', cors()); // 👈 allow all OPTIONS preflight requests
+app.options('*', cors());
 
-app.use('/uploads', express.static(UPLOADS_DIR));
 
 // Serve static files from the React app build directory
 app.use(express.static(path.join(__dirname, '../client/dist')));
