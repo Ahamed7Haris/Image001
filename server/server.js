@@ -25,7 +25,13 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }
 });
 
-app.use(cors());
+
+app.use(cors({
+  origin: 'https://abuinshah.netlify.app', // ✅ allow Netlify frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+
 app.use(express.json());
 app.use('/uploads', express.static(UPLOADS_DIR));
 
