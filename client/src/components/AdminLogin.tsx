@@ -10,6 +10,7 @@ const AdminLogin = () => {
 
   const handleLogin = async () => {
     setLoading(true);
+    setError('');
     try {
       const API_URL = import.meta.env.VITE_API_URL;
       const res = await fetch(`${API_URL}api/admin-login`, {
@@ -17,12 +18,12 @@ const AdminLogin = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
+
       if (res.ok) {
-        // Store login time along with admin status
         const loginData = {
           isAdmin: true,
           loginTime: new Date().getTime(),
-          expiresIn: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+          expiresIn: 24 * 60 * 60 * 1000, // 24 hours
         };
         localStorage.setItem('adminAuth', JSON.stringify(loginData));
         navigate('/admin');
@@ -31,8 +32,9 @@ const AdminLogin = () => {
       }
     } catch (err) {
       setError('Server error');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
