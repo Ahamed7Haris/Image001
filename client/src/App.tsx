@@ -1,13 +1,13 @@
 // File: src/App.tsx
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import Home from './components/Home';
 import SendPosters from './components/SendPosters';
 import MemberRegistration from './components/MemberRegistration';
-import AdminLogin from './components/AdminLogin';
-import AdminPanel from './components/AdminPanel';
+import AdminLogin from './components/AdminLogin.tsx';
+import AdminPanel from './components/AdminPanel.tsx';
 import { useState } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
-import logo from '../logo.png';
+import logo from '../assets/logo.png'; // Adjust the path to your logo image
 import { useNavigate } from 'react-router-dom';
 
 
@@ -73,7 +73,7 @@ const NavLink = ({ to, label, active, onClick }: { to: string; label: string; ac
 
 function App() {
   return (
-    <Router>
+    <>
       <Navbar />
       
       
@@ -96,11 +96,9 @@ function App() {
           </Routes>
         </div>
       </main>
-    </Router>
+    </>
   );
 }
 
 export default App;
 
-const API_URL = import.meta.env.VITE_API_URL;
-fetch(`${API_URL}/api/users`)
