@@ -20,13 +20,13 @@ type DashboardStats = {
 // DashboardCard Component (reused from the simple-dashboard immersive)
 const DashboardCard = ({ title, value, description, icon }) => {
   return (
-    <div className="bg-white rounded-xl shadow-lg p-3 flex flex-col items-start justify-between transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border border-gray-100"> {/* Reduced padding to p-3 */}
-      <div className="flex items-center mb-1"> {/* Reduced margin-bottom */}
-        {icon && <div className="text-xl mr-1">{icon}</div>} {/* Reduced icon size and margin */}
-        <h3 className="text-sm font-semibold text-gray-800">{title}</h3> {/* Reduced title text size */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-lg transition-all">
+      <div className="flex items-center gap-2 mb-2">
+        {icon && <span className="text-xl">{icon}</span>}
+        <h3 className="font-semibold text-gray-800">{title}</h3>
       </div>
-      <p className="text-2xl font-bold text-blue-700 mb-0.5">{value}</p> {/* Reduced value text size */}
-      <p className="text-xs text-gray-500">{description}</p> {/* Description text size remains xs */}
+      <p className="text-2xl font-bold text-blue-600 mb-1">{value}</p>
+      <p className="text-sm text-gray-500">{description}</p>
     </div>
   );
 };
@@ -220,198 +220,228 @@ const AdminPanel = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 overflow-y-auto mt-16">
-      <div className="w-full flex flex-col lg:flex-row gap-8"> {/* Changed from max-w-7xl mx-auto to w-full */}
-        {/* Left Column: Admin Panel Content */}
-        <div className="lg:w-2/3 w-full space-y-8"> {/* Added space-y for consistent vertical spacing */}
-          <div className="bg-white rounded-xl shadow-lg p-6 flex justify-between items-center border border-gray-100">
-            <h1 className="text-3xl font-extrabold text-gray-900">Admin Panel</h1>
-            <button onClick={handleLogout} className="bg-red-600 text-white px-5 py-2 rounded-lg shadow-md hover:bg-red-700 transition-all duration-300 transform hover:scale-105 font-semibold">
-              Logout
-            </button>
-          </div>
-
-          {error && (
-            <div className="bg-red-100 text-red-800 px-5 py-3 rounded-lg flex justify-between items-center shadow-md border border-red-200 animate-fade-in">
-              <span className="font-medium">{error}</span>
-              <button onClick={() => setError(null)} className="font-bold text-red-800 hover:text-red-900 text-xl ml-4">&times;</button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Fixed Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center py-4 sm:h-16 gap-4 sm:gap-0">
+            {/* Left: Title and Status */}
+            <div className="flex items-center gap-4 w-full sm:w-auto justify-between">
+              <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
+              <div className={`
+                px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 
+                ${backendStatus === 'online' ? 'bg-green-100 text-green-800' :
+                  backendStatus === 'offline' ? 'bg-red-100 text-red-800' :
+                    'bg-yellow-100 text-yellow-800'}
+              `}>
+                <span className={`w-2.5 h-2.5 rounded-full ${backendStatus === 'online' ? 'bg-green-500 animate-pulse' :
+                    backendStatus === 'offline' ? 'bg-red-500' :
+                      'bg-yellow-500 animate-pulse'
+                  }`}></span>
+                {backendStatus === 'online' ? 'System Live' :
+                  backendStatus === 'offline' ? 'System Offline' :
+                    'Checking Status...'}
+              </div>
             </div>
-          )}
 
-          {/* Search User by Email */}
-          <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col sm:flex-row gap-4 border border-gray-100">
-            <input
-              type="email"
-              placeholder="Search user by email..."
-              value={searchEmail}
-              onChange={e => setSearchEmail(e.target.value)}
-              className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 outline-none"
-            />
-            <button
-              onClick={handleSearch}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 font-semibold"
-            >
-              Search
-            </button>
+            {/* Right: Navigation */}
+            <nav className="flex items-center gap-4 w-full sm:w-auto justify-center">
+              <a href="/" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100">
+                Home
+              </a>
+              <a href="/register" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100">
+                Register
+              </a>
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition-colors">
+                Logout
+              </button>
+            </nav>
           </div>
+        </div>
+      </header>
 
-          {/* Edit User Form */}
-          {editingUser && (
-            <form onSubmit={handleUpdate} className="bg-white shadow-lg p-8 rounded-xl mb-6 border border-gray-100">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Edit User Details</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <input
-                  type="text"
-                  name="name"
-                  value={editingUser.name}
-                  onChange={handleEditChange}
-                  placeholder="Full Name"
-                  className="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-700 outline-none"
-                  required
-                />
+
+      <main className="pt-24 px-4 sm:px-6 lg:px-8 pb-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Left Column: Admin Panel Content */}
+            <div className="lg:w-2/3 w-full space-y-6">
+
+              {error && (
+                <div className="bg-red-100 text-red-800 px-5 py-3 rounded-lg flex justify-between items-center shadow-md border border-red-200 animate-fade-in">
+                  <span className="font-medium">{error}</span>
+                  <button onClick={() => setError(null)} className="font-bold text-red-800 hover:text-red-900 text-xl ml-4">&times;</button>
+                </div>
+              )}
+
+              {/* Search User by Email */}
+              <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col sm:flex-row gap-4 border border-gray-100">
                 <input
                   type="email"
-                  name="email"
-                  value={editingUser.email}
-                  className="p-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed outline-none"
-                  disabled
+                  placeholder="Search user by email..."
+                  value={searchEmail}
+                  onChange={e => setSearchEmail(e.target.value)}
+                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 outline-none"
                 />
-                <input
-                  type="tel"
-                  name="phone"
-                  value={editingUser.phone}
-                  onChange={handleEditChange}
-                  placeholder="Phone Number"
-                  className="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-700 outline-none"
-                  required
-                />
-                <select
-                  name="designation"
-                  value={editingUser.designation}
-                  onChange={handleEditChange}
-                  className="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-700 outline-none bg-white"
-                  required
+                <button
+                  onClick={handleSearch}
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 font-semibold"
                 >
-                  <option value="">Select Designation</option> {/* Added default option */}
-                  <option value="Health insurance advisor">Health Insurance Advisor</option>
-                  <option value="Wealth Manager">Wealth Manager</option>
-                </select>
-                <div className="flex gap-4 mt-4 col-span-full">
-                  <button
-                    type="submit"
-                    className="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-700 transition-all duration-300 transform hover:scale-105 font-semibold"
-                  >
-                    Update User
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditingUser(null)}
-                    className="flex-1 bg-gray-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 font-semibold"
-                  >
-                    Cancel
-                  </button>
-                </div>
+                  Search
+                </button>
               </div>
-            </form>
-          )}
 
-          {/* User List */}
-          <div className="bg-white shadow-lg rounded-xl p-6 border border-gray-100">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Registered Members</h2>
-            <div className="space-y-4 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar"> {/* Increased max-height, added custom-scrollbar */}
-              {loading ? (
-                <div className="text-center text-gray-500 py-10 text-lg">Loading users...</div>
-              ) : users.length === 0 ? (
-                <div className="text-center text-gray-500 py-10 text-lg">No users found.</div>
-              ) : (
-                users.map(user => (
-                  <div
-                    key={user.id}
-                    className="bg-gray-50 hover:bg-gray-100 transition-colors shadow-sm rounded-lg p-5 flex flex-col sm:flex-row items-center sm:items-start gap-4 border border-gray-200"
-                  >
-                    {user.photoUrl && (
-                      <img
-                        src={`${API_BASE_URL}/${user.photoUrl}`} // Use API_BASE_URL here
-                        alt={user.name}
-                        className="w-20 h-20 rounded-full object-cover border-4 border-blue-400 flex-shrink-0"
-                        onError={(e) => { e.currentTarget.src = `https://placehold.co/80x80/cccccc/white?text=No+Img`; }}
-                      />
-                    )}
-                    <div className="flex-1 text-center sm:text-left">
-                      <div className="font-bold text-xl text-gray-800">{user.name}</div>
-                      <div className="text-sm text-gray-600">{user.email}</div>
-                      <div className="text-sm text-gray-600">{user.phone}</div>
-                      <div className="text-md text-blue-700 font-semibold mt-1">{user.designation}</div>
-                    </div>
-                    <div className="flex flex-row sm:flex-col gap-3 mt-4 sm:mt-0">
+              {/* Edit User Form */}
+              {editingUser && (
+                <form onSubmit={handleUpdate} className="bg-white shadow-lg p-8 rounded-xl mb-6 border border-gray-100">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Edit User Details</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <input
+                      type="text"
+                      name="name"
+                      value={editingUser.name}
+                      onChange={handleEditChange}
+                      placeholder="Full Name"
+                      className="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-700 outline-none"
+                      required
+                    />
+                    <input
+                      type="email"
+                      name="email"
+                      value={editingUser.email}
+                      className="p-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed outline-none"
+                      disabled
+                    />
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={editingUser.phone}
+                      onChange={handleEditChange}
+                      placeholder="Phone Number"
+                      className="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-700 outline-none"
+                      required
+                    />
+                    <select
+                      name="designation"
+                      value={editingUser.designation}
+                      onChange={handleEditChange}
+                      className="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-700 outline-none bg-white"
+                      required
+                    >
+                      <option value="">Select Designation</option> {/* Added default option */}
+                      <option value="Health insurance advisor">Health Insurance Advisor</option>
+                      <option value="Wealth Manager">Wealth Manager</option>
+                    </select>
+                    <div className="flex gap-4 mt-4 col-span-full">
                       <button
-                        onClick={() => handleEdit(user)}
-                        className="bg-yellow-500 text-white px-5 py-2 rounded-lg shadow-md hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105 text-sm font-semibold"
+                        type="submit"
+                        className="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-700 transition-all duration-300 transform hover:scale-105 font-semibold"
                       >
-                        Edit
+                        Update User
                       </button>
                       <button
-                        onClick={() => handleDelete(user.id)}
-                        className="bg-red-600 text-white px-5 py-2 rounded-lg shadow-md hover:bg-red-700 transition-all duration-300 transform hover:scale-105 text-sm font-semibold"
+                        type="button"
+                        onClick={() => setEditingUser(null)}
+                        className="flex-1 bg-gray-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 font-semibold"
                       >
-                        Delete
+                        Cancel
                       </button>
                     </div>
                   </div>
-                ))
+                </form>
               )}
-            </div>
-          </div>
-        </div>
 
-        {/* Right Column: Simple Dashboard */}
-        <div className="lg:w-1/3 w-full mt-6 lg:mt-0 space-y-8"> {/* Added space-y */}
-          <div className="bg-blue-700 text-white p-6 rounded-xl shadow-lg mb-6 flex flex-col items-start border border-blue-600">
-            <div className="flex justify-between items-center w-full mb-3">
-              <h2 className="text-2xl font-bold">Dashboard Summary</h2>
-              <div className={`px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-2 ${
-                  backendStatus === 'online' ? 'bg-green-500' :
-                  backendStatus === 'offline' ? 'bg-red-500' :
-                  'bg-yellow-500'
-              }`}>
-                <span className={`w-3 h-3 rounded-full ${
-                  backendStatus === 'online' ? 'bg-white' :
-                  backendStatus === 'offline' ? 'bg-white' :
-                  'bg-white animate-pulse'
-                }`}></span>
-                Backend: {backendStatus.charAt(0).toUpperCase() + backendStatus.slice(1)}
+              {/* User List */}
+              <div className="bg-white shadow-lg rounded-xl p-6 border border-gray-100">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Registered Members</h2>
+                <div className="space-y-4 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar"> {/* Increased max-height, added custom-scrollbar */}
+                  {loading ? (
+                    <div className="text-center text-gray-500 py-10 text-lg">Loading users...</div>
+                  ) : users.length === 0 ? (
+                    <div className="text-center text-gray-500 py-10 text-lg">No users found.</div>
+                  ) : (
+                    users.map(user => (
+                      <div
+                        key={user.id}
+                        className="bg-gray-50 hover:bg-gray-100 transition-colors shadow-sm rounded-lg p-5 flex flex-col sm:flex-row items-center sm:items-start gap-4 border border-gray-200"
+                      >
+                        {user.photoUrl && (
+                          <img
+                            src={`${API_BASE_URL}/${user.photoUrl}`} // Use API_BASE_URL here
+                            alt={user.name}
+                            className="w-20 h-20 rounded-full object-cover border-4 border-blue-400 flex-shrink-0"
+                            onError={(e) => { e.currentTarget.src = `https://placehold.co/80x80/cccccc/white?text=No+Img`; }}
+                          />
+                        )}
+                        <div className="flex-1 text-center sm:text-left">
+                          <div className="font-bold text-xl text-gray-800">{user.name}</div>
+                          <div className="text-sm text-gray-600">{user.email}</div>
+                          <div className="text-sm text-gray-600">{user.phone}</div>
+                          <div className="text-md text-blue-700 font-semibold mt-1">{user.designation}</div>
+                        </div>
+                        <div className="flex flex-row sm:flex-col gap-3 mt-4 sm:mt-0">
+                          <button
+                            onClick={() => handleEdit(user)}
+                            className="bg-yellow-500 text-white px-5 py-2 rounded-lg shadow-md hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105 text-sm font-semibold"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(user.id)}
+                            className="bg-red-600 text-white px-5 py-2 rounded-lg shadow-md hover:bg-red-700 transition-all duration-300 transform hover:scale-105 text-sm font-semibold"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
-            <p className="text-sm text-blue-200">Data last updated: {new Date().toLocaleTimeString()}</p>
           </div>
-          <div className="grid grid-cols-1 gap-6"> {/* Dashboard cards */}
-            <DashboardCard
-              title="Total Registered Users"
-              value={dashboardStats.totalUsers.toLocaleString()}
-              description="All users in the system"
-              icon="👥"
-            />
-            <DashboardCard
-              title="Health Advisors"
-              value={dashboardStats.healthAdvisors.toLocaleString()}
-              description="Users with Health Insurance Advisor designation"
-              icon="⚕️"
-            />
-            <DashboardCard
-              title="Wealth Managers"
-              value={dashboardStats.wealthManagers.toLocaleString()}
-              description="Users with Wealth Manager designation"
-              icon="📈"
-            />
-            <DashboardCard
-              title="Designated Users"
-              value={dashboardStats.designatedUsers.toLocaleString()}
-              description="Users with either Health Advisor or Wealth Manager designation"
-              icon="🤝"
-            />
+
+          {/* Right Column: Dashboard */}
+          <div className="lg:w-1/3 w-full space-y-6">
+            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+              <div className="flex flex-col gap-2">
+                <h2 className="text-xl font-bold text-gray-900">Dashboard Summary</h2>
+                <p className="text-sm text-gray-500">
+                  Last updated: {new Date().toLocaleTimeString()}
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 mt-4">
+                <DashboardCard
+                  title="Total Users"
+                  value={dashboardStats.totalUsers.toLocaleString()}
+                  description="All registered members"
+                  icon="👥"
+                />
+                <DashboardCard
+                  title="Health Advisors"
+                  value={dashboardStats.healthAdvisors.toLocaleString()}
+                  description="Health Insurance Advisors"
+                  icon="⚕️"
+                />
+                <DashboardCard
+                  title="Wealth Managers"
+                  value={dashboardStats.wealthManagers.toLocaleString()}
+                  description="Wealth Management Team"
+                  icon="📈"
+                />
+                <DashboardCard
+                  title="Designated Users"
+                  value={dashboardStats.designatedUsers.toLocaleString()}
+                  description="Users with specific roles"
+                  icon="🤝"
+                />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </main>
 
       {/* Custom Confirmation Modal */}
       {showConfirmModal && (
@@ -435,48 +465,6 @@ const AdminPanel = () => {
           </div>
         </div>
       )}
-
-      {/* Custom CSS for scrollbar and animations */}
-      <style>
-        {`
-          /* Custom Scrollbar for User List */
-          .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
-          }
-
-          .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-          }
-
-          .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 10px;
-          }
-
-          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #555;
-          }
-
-          /* Fade-in animation for error messages and modal */
-          @keyframes fade-in {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          .animate-fade-in {
-            animation: fade-in 0.3s ease-out forwards;
-          }
-
-          /* Scale-in animation for modal */
-          @keyframes scale-in {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-          }
-          .animate-scale-in {
-            animation: scale-in 0.3s ease-out forwards;
-          }
-        `}
-      </style>
     </div>
   );
 };
