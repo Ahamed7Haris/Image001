@@ -5,7 +5,6 @@ const multer = require('multer');
 const fs = require('fs');
 const cors = require('cors');
 const allowedOrigins = [
-  'http://localhost:5173',               // For development
   'https://abuinshah.netlify.app'        // For production
 ];
 
