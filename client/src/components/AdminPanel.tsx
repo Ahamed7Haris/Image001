@@ -62,14 +62,15 @@ const AdminPanel = () => {
     let designatedUsers = 0;
 
     usersList.forEach(user => {
-      // Support both string and array for designation
-      const designations = Array.isArray(user.designation)
-        ? user.designation
-        : [user.designation];
+      // Always treat designation as array of trimmed strings
+      const designations = typeof user.designation === 'string'
+        ? user.designation.split(',').map(d => d.trim())
+        : Array.isArray(user.designation)
+          ? user.designation
+          : [];
 
       if (designations.includes('Health insurance advisor')) healthAdvisors++;
       if (designations.includes('Wealth Manager')) wealthManagers++;
-      // Count as designated if has at least one of the two
       if (
         designations.includes('Health insurance advisor') ||
         designations.includes('Wealth Manager')
