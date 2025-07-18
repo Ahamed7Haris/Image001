@@ -54,25 +54,39 @@ const AdminPanel = () => {
   // It's best practice to define VITE_API_URL without a trailing slash in your .env file (e.g., VITE_API_URL=http://localhost:3001)
   const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-  // Function to calculate dashboard statistics
+  // Updated Dashboard Stats Calculation
   const calculateDashboardStats = useCallback((usersList: User[]) => {
-    const totalUsers = usersList.length;
-    const healthAdvisors = usersList.filter(user => user.designation === 'Health insurance advisor').length;
-    const wealthManagers = usersList.filter(user => user.designation === 'Wealth Manager').length;
-    // Count users who are either Health insurance advisor OR Wealth Manager
-    const designatedUsers = usersList.filter(user =>
-      user.designation === 'Health insurance advisor' || user.designation === 'Wealth Manager'
-    ).length;
+    let totalUsers = usersList.length;
+    let healthAdvisors = 0;
+    let wealthManagers = 0;
+    let designatedUsers = 0;
+
+    usersList.forEach(user => {
+      // Support both string and array for designation
+      const designations = Array.isArray(user.designation)
+        ? user.designation
+        : [user.designation];
+
+      if (designations.includes('Health insurance advisor')) healthAdvisors++;
+      if (designations.includes('Wealth Manager')) wealthManagers++;
+      // Count as designated if has at least one of the two
+      if (
+        designations.includes('Health insurance advisor') ||
+        designations.includes('Wealth Manager')
+      ) {
+        designatedUsers++;
+      }
+    });
+
     setDashboardStats({ totalUsers, healthAdvisors, wealthManagers, designatedUsers });
   }, []);
 
   const fetchUsers = useCallback(async () => {
     try {
-      // Construct URL with leading slash for the path
       const response = await fetch(`${API_BASE_URL}api/users`);
       const data = await response.json();
       setUsers(data);
-      calculateDashboardStats(data); // Calculate stats after fetching users
+      calculateDashboardStats(data); // Always update stats after fetch
     } catch (err) {
       setError('Failed to fetch users');
     } finally {
@@ -82,22 +96,7 @@ const AdminPanel = () => {
 
   // Effect for fetching users and checking token expiration every 60 seconds
   useEffect(() => {
-    fetchUsers(); // Initial fetch
-
-    const dataRefreshInterval = setInterval(() => {
-      const authData = localStorage.getItem('adminAuth');
-      if (authData) {
-        const { loginTime, expiresIn } = JSON.parse(authData);
-        // Check for token expiration
-        if (Date.now() - loginTime > expiresIn) {
-          handleLogout();
-        }
-      }
-      // Refresh dashboard data every 60 seconds
-      fetchUsers();
-    }, 60000); // Every 60 seconds
-
-    return () => clearInterval(dataRefreshInterval);
+    fetchUsers(); // Initial fetch only
   }, [fetchUsers]);
 
   // Effect for 1-second backend ping for status indicator
@@ -118,7 +117,7 @@ const AdminPanel = () => {
     };
 
     pingBackend(); // Initial ping
-    const pingInterval = setInterval(pingBackend, 1000); // Ping every 1 second
+    const pingInterval = setInterval(pingBackend, 10000); // Ping every 1 second
 
     return () => clearInterval(pingInterval);
   }, [API_BASE_URL]); // Dependency array for ping effect
@@ -132,15 +131,13 @@ const AdminPanel = () => {
     setConfirmMessage('Are you sure you want to delete this user? This action cannot be undone.');
     setConfirmAction(() => async () => {
       try {
-        // Construct URL with leading slash for the path
         await fetch(`${API_BASE_URL}api/users/${id}`, {
           method: 'DELETE',
         });
-        // Update local state and recalculate stats
         const updatedUsers = users.filter(u => u.id !== id);
         setUsers(updatedUsers);
-        calculateDashboardStats(updatedUsers);
-        setError(null); // Clear any previous error
+        calculateDashboardStats(updatedUsers); // Update stats immediately
+        setError(null);
       } catch (err) {
         setError('Failed to delete user');
       } finally {
@@ -173,7 +170,6 @@ const AdminPanel = () => {
     if (!editingUser) return;
 
     try {
-      // Construct URL with leading slash for the path
       const response = await fetch(`${API_BASE_URL}api/users/${editingUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -183,12 +179,11 @@ const AdminPanel = () => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Update failed');
 
-      // Update local state and recalculate stats
       const updatedUsers = users.map(u => u.id === editingUser.id ? data.user : u);
       setUsers(updatedUsers);
-      calculateDashboardStats(updatedUsers);
+      calculateDashboardStats(updatedUsers); // Update stats immediately
       setEditingUser(null);
-      setError(null); // Clear any previous error
+      setError(null);
     } catch (err: any) {
       setError(err.message);
     }
