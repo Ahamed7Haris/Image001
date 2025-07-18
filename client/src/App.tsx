@@ -58,7 +58,7 @@ const Navbar = () => {
           <NavLink to="/" label="Home" active={location.pathname === '/'} onClick={() => setOpen(false)} />
           <NavLink to="/send-poster" label="Send Poster" active={location.pathname === '/send-poster'} onClick={() => setOpen(false)} />
           <NavLink to="/register" label="Register Member" active={location.pathname === '/register'} onClick={() => setOpen(false)} />
-          <NavLink to="/admin-login" label="Admin Login" active={location.pathname === '/admin-login'} onClick={() => setOpen(false)} /> {/* Added Admin Login to mobile menu */}
+          
         </div>
       )}
     </nav>
