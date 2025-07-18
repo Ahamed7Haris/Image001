@@ -179,11 +179,20 @@ const AdminPanel = () => {
       {/* Top Title */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">ABU PORTAL</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">ABU PORTAL</h1>
+            {backendStatus !== 'offline' && (
+              <span className={`hidden sm:flex items-center gap-1.5 text-xs px-2 py-1 rounded-full font-medium
+                ${backendStatus === 'online' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${backendStatus === 'online' ? 'bg-green-500' : 'bg-yellow-500 animate-pulse'}`}></span>
+                {backendStatus === 'online' ? 'Connected' : 'Connecting...'}
+              </span>
+            )}
+          </div>
           <nav className="hidden sm:flex items-center gap-4">
-            <a href="/" className="text-gray-600 hover:text-gray-900">Home</a>
-            <a href="/register" className="text-gray-600 hover:text-gray-900">Register</a>
-            <button onClick={handleLogout} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+            <a href="/" className="text-gray-600 hover:text-gray-900 transition-colors">Home</a>
+            <a href="/register" className="text-gray-600 hover:text-gray-900 transition-colors">Register</a>
+            <button onClick={handleLogout} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
               Logout
             </button>
           </nav>
@@ -334,8 +343,8 @@ const AdminPanel = () => {
           )}
 
           {/* Search & User List */}
-          <section className="bg-white p-4 sm:p-6 rounded-xl shadow-md border">
-            <div className="mb-6">
+          <section className="bg-white p-4 sm:p-6 rounded-xl shadow-md border relative">
+            <div className="mb-6 sticky top-0 bg-white z-10 pb-4 border-b">
               <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4">Search Member</h2>
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1">
@@ -359,12 +368,26 @@ const AdminPanel = () => {
               </div>
             </div>
 
-            <div>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-                <h2 className="text-2xl font-bold text-gray-800">Registered Members</h2>
-                <span className="bg-blue-100 text-blue-800 font-medium px-3 py-1 rounded-full">{users.length} total</span>
+            <div className="mt-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sticky top-16 bg-white py-2 z-10">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-gray-800">Registered Members</h2>
+                  <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                    {users.length} total
+                  </span>
+                </div>
+                {users.length > 0 && (
+                  <div className="text-sm text-gray-500">
+                    Scroll to see more members
+                  </div>
+                )}
               </div>
-              <div className="space-y-4">
+              <div 
+                className="space-y-3 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-track-gray-100 pr-2 transition-all"
+                style={{ 
+                  maxHeight: 'calc(100vh - 350px)',
+                  minHeight: '300px'
+                }}>
                 {loading ? (
                   <div className="text-center py-8">
                     <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
