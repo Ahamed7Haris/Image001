@@ -172,7 +172,7 @@ const AdminPanel = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen w-screen bg-gray-50">
       {/* --- HEADER --- */}
       <header className="bg-white shadow-sm sticky top-0 z-40">
         <div className="px-4 sm:px-6 lg:px-8">
