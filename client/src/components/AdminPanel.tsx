@@ -79,7 +79,7 @@ const AdminPanel = () => {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users`);
+      const response = await fetch(`${API_BASE_URL}api/users`);
       const data = await response.json();
       setUsers(data);
       calculateDashboardStats(data);
@@ -98,7 +98,7 @@ const AdminPanel = () => {
     const pingBackend = async () => {
       try {
         setBackendStatus('pinging');
-        const response = await fetch(`${API_BASE_URL}/api/ping`);
+        const response = await fetch(`${API_BASE_URL}api/ping`);
         if (response.ok) {
           setBackendStatus('online');
         } else {
@@ -117,7 +117,7 @@ const AdminPanel = () => {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${API_BASE_URL}/api/admin/logout`, {
+      await fetch(`${API_BASE_URL}admin/logout`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -131,7 +131,7 @@ const AdminPanel = () => {
     setConfirmMessage('Are you sure you want to delete this user? This action cannot be undone.');
     setConfirmAction(() => async () => {
       try {
-        await fetch(`${API_BASE_URL}/api/users/${id}`, {
+        await fetch(`${API_BASE_URL}api/users/${id}`, {
           method: 'DELETE',
         });
         const updatedUsers = users.filter(u => u.id !== id);
@@ -170,7 +170,7 @@ const AdminPanel = () => {
     if (!editingUser) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users/${editingUser.id}`, {
+      const response = await fetch(`${API_BASE_URL}api/users/${editingUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editingUser),
