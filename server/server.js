@@ -206,6 +206,10 @@ app.put('/api/users/:id', async (req, res) => {
   }
 });
 
+app.get('/api/ping', (req, res) => {
+  res.json({ status: 'ok', message: 'Backend is live!' });
+});
+
 const PORT = process.env.PORT || 3001;
 const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${PORT}`;
 app.listen(PORT, () => {
