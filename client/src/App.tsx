@@ -38,7 +38,7 @@ const Navbar = () => {
             <NavLink to="/" label="Home" active={location.pathname === '/'} />
             <NavLink to="/send-poster" label="Send Poster" active={location.pathname === '/send-poster'} />
             <NavLink to="/register" label="Register Member" active={location.pathname === '/register'} />
-            <NavLink to="/admin-login" label="Admin Login" active={location.pathname === '/admin-login'} /> {/* Added Admin Login to Navbar */}
+            
           </div>
           <div className="md:hidden flex items-center">
             <button
