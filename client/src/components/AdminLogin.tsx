@@ -35,7 +35,7 @@ const AdminLogin = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md text-center">
-        <h2 className="text-2xl font-bold mb-6">Admin Login</h2>
+        <h2 className="text-2xl font-bold mb-6">Admin secure Login</h2>
         <input
           type="text"
           placeholder="Username"
