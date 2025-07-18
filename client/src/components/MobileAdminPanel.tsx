@@ -19,7 +19,7 @@ type DashboardStats = {
 };
 
 // Mobile-optimized Dashboard Card Component
-const MobileDashboardCard = ({ title, value, icon }) => ( // Removed description to save space
+const MobileDashboardCard = ({ title, value, icon }) => (
   <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
     <div className="flex items-center gap-2">
       <div className="bg-blue-50 p-2 rounded-lg flex-shrink-0">
@@ -67,7 +67,6 @@ const AdminPanel = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
   const [confirmMessage, setConfirmMessage] = useState('');
-  // State for mobile tab navigation
   const [activeTab, setActiveTab] = useState<'dashboard' | 'search' | 'list' | 'edit'>('dashboard');
 
   const navigate = useNavigate();
@@ -141,24 +140,13 @@ const AdminPanel = () => {
   useEffect(() => {
     const calculateHeight = () => {
       if (userListRef.current) {
-        // Calculate the height of the fixed header on mobile
         const headerElement = document.querySelector('header');
         const headerHeight = headerElement ? headerElement.offsetHeight : 0;
-
-        // Calculate the space below the user list (e.g., bottom padding of main, plus floating button space)
-        const bottomPadding = 20; // Matches pb-20 in main
-        const floatingButtonHeight = 60; // Approx height of logout button + its bottom margin
-
-        // The top of the user list section, relative to the viewport
+        const bottomPadding = 20; // Corresponds to pb-20 in main
         const userListTop = userListRef.current.getBoundingClientRect().top;
-
-        // Available viewport height
         const viewportHeight = window.innerHeight;
-
-        // Calculate max height: total viewport height - (space from top of viewport to top of list) - bottom padding/button space
         const dynamicHeight = viewportHeight - userListTop - bottomPadding;
-
-        setUserListMaxHeight(`${Math.max(250, dynamicHeight)}px`); // Ensure a minimum height of 250px
+        setUserListMaxHeight(`${Math.max(250, dynamicHeight)}px`);
       }
     };
 
@@ -249,10 +237,6 @@ const AdminPanel = () => {
     } else {
       setError('User not found with this email.');
     }
-  };
-
-  const handleConfirm = () => {
-    if (confirmAction) confirmAction();
   };
 
   // --- Render Functions for Content Sections ---

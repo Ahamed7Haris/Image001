@@ -4,7 +4,7 @@ import Home from './components/Home';
 import SendPosters from './components/SendPosters';
 import MemberRegistration from './components/MemberRegistration';
 import AdminLogin from './components/AdminLogin.tsx';
-import AdminPanel from './components/AdminPanel.tsx';
+import { AdminPanel } from './components/AdminPanel.tsx'; // Import with curly braces as it's a named export
 import { useState } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
 import logo from '../assets/logo.png'; // Adjust the path to your logo image
@@ -16,22 +16,29 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Do not render Navbar on the /admin route
+  if (location.pathname === '/admin') {
+    return null;
+  }
+
   return (
     <nav className="bg-blue-500 shadow-md">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          
-         
-          <div className="flex-shrink-0 text-white font-bold text-xl">
-            <img src={logo} alt="Logo" onClick={()=>{ navigate('/'); setOpen(false);
-
-            }} className="h-16 w-16 inline-block mr-2" />
+          <div className="flex-shrink-0 text-white font-bold text-xl flex items-center">
+            <img 
+              src={logo} 
+              alt="Logo" 
+              onClick={() => { navigate('/'); setOpen(false); }} 
+              className="h-12 w-12 sm:h-16 sm:w-16 inline-block mr-2 cursor-pointer" // Adjusted size for better mobile fit
+            />
             ABU PORTAL
           </div>
           <div className="hidden md:flex gap-6">
             <NavLink to="/" label="Home" active={location.pathname === '/'} />
             <NavLink to="/send-poster" label="Send Poster" active={location.pathname === '/send-poster'} />
             <NavLink to="/register" label="Register Member" active={location.pathname === '/register'} />
+            <NavLink to="/admin-login" label="Admin Login" active={location.pathname === '/admin-login'} /> {/* Added Admin Login to Navbar */}
           </div>
           <div className="md:hidden flex items-center">
             <button
@@ -48,9 +55,10 @@ const Navbar = () => {
       </div>
       {open && (
         <div className="md:hidden px-4 pb-4">
-          <NavLink to="/" label="Home"  active={location.pathname === '/'} onClick={() => setOpen(false)} />
+          <NavLink to="/" label="Home" active={location.pathname === '/'} onClick={() => setOpen(false)} />
           <NavLink to="/send-poster" label="Send Poster" active={location.pathname === '/send-poster'} onClick={() => setOpen(false)} />
           <NavLink to="/register" label="Register Member" active={location.pathname === '/register'} onClick={() => setOpen(false)} />
+          <NavLink to="/admin-login" label="Admin Login" active={location.pathname === '/admin-login'} onClick={() => setOpen(false)} /> {/* Added Admin Login to mobile menu */}
         </div>
       )}
     </nav>
@@ -72,14 +80,17 @@ const NavLink = ({ to, label, active, onClick }: { to: string; label: string; ac
 );
 
 function App() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname === '/admin';
+
   return (
     <>
-      <Navbar />
+      {/* Navbar only renders if NOT on the /admin route */}
+      {!isAdminRoute && <Navbar />}
       
-      
-      
-      <main className="h-[calc(100vh-4rem)] w-full flex flex-col items-center justify-center bg-gray-100 overflow-hidden">
-        <div className="w-full mx-auto p-4">
+      {/* Main content area - removed fixed height and overflow, AdminPanel will manage its own */}
+      <main className={`${isAdminRoute ? 'h-full w-full' : 'min-h-[calc(100vh-4rem)] w-full'} flex flex-col items-center justify-start bg-gray-100`}>
+        <div className="w-full mx-auto"> {/* Removed p-4 to give AdminPanel full control */}
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/send-poster" element={<SendPosters />} />
@@ -101,4 +112,3 @@ function App() {
 }
 
 export default App;
-
