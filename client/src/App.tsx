@@ -79,7 +79,7 @@ function App() {
       
       
       <main className="h-[calc(100vh-4rem)] w-full flex flex-col items-center justify-center bg-gray-100 overflow-hidden">
-        <div className="w-full max-w-2xl mx-auto p-4">
+        <div className="w-full mx-auto p-4">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/send-poster" element={<SendPosters />} />
