@@ -118,7 +118,7 @@ const AdminPanel = () => {
     };
 
     pingBackend(); // Initial ping
-    const pingInterval = setInterval(pingBackend, 1000); // Ping every 1 second
+    const pingInterval = setInterval(pingBackend, 10000); // Ping every 1 second
 
     return () => clearInterval(pingInterval);
   }, [API_BASE_URL]); // Dependency array for ping effect
