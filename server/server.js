@@ -33,7 +33,7 @@ const upload = multer({
 
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: ['https://abuinshah.netlify.app'], // must match your frontend URL exactly
   credentials: true,
 }));
 
