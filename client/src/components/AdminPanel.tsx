@@ -17,15 +17,15 @@ type DashboardStats = {
   designatedUsers: number; // New stat for users with either designation
 };
 
-// DashboardCard Component (reused from the simple-dashboard immersive)
+// DashboardCard Component
 const DashboardCard = ({ title, value, description, icon }) => {
   return (
-    <div className="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-lg transition-all">
-      <div className="flex items-center gap-2 mb-2">
-        {icon && <span className="text-xl">{icon}</span>}
-        <h3 className="font-semibold text-gray-800">{title}</h3>
+    <div className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-300">
+      <div className="flex items-center gap-3 mb-3">
+        {icon && <span className="text-2xl bg-blue-50 w-12 h-12 flex items-center justify-center rounded-lg text-blue-600">{icon}</span>}
+        <h3 className="font-semibold text-gray-800 text-lg">{title}</h3>
       </div>
-      <p className="text-2xl font-bold text-blue-600 mb-1">{value}</p>
+      <p className="text-3xl font-bold text-blue-600 mb-2">{value}</p>
       <p className="text-sm text-gray-500">{description}</p>
     </div>
   );
@@ -265,9 +265,43 @@ const AdminPanel = () => {
 
       <main className="pt-24 px-4 sm:px-6 lg:px-8 pb-8">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Left Column: Admin Panel Content */}
-            <div className="lg:w-2/3 w-full space-y-6">
+          {/* Dashboard Stats at the top */}
+          <div className="mb-8 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+            <div className="flex flex-col gap-2 mb-4">
+              <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
+              <p className="text-sm text-gray-500">Last updated: {new Date().toLocaleTimeString()}</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <DashboardCard
+                title="Total Users"
+                value={dashboardStats.totalUsers.toLocaleString()}
+                description="All registered members"
+                icon="👥"
+              />
+              <DashboardCard
+                title="Health Advisors"
+                value={dashboardStats.healthAdvisors.toLocaleString()}
+                description="Health Insurance Advisors"
+                icon="⚕️"
+              />
+              <DashboardCard
+                title="Wealth Managers"
+                value={dashboardStats.wealthManagers.toLocaleString()}
+                description="Wealth Management Team"
+                icon="📈"
+              />
+              <DashboardCard
+                title="Designated Users"
+                value={dashboardStats.designatedUsers.toLocaleString()}
+                description="Users with specific roles"
+                icon="🤝"
+              />
+            </div>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="bg-gray-50 rounded-xl p-6">
+            <div className="w-full space-y-6">
 
               {error && (
                 <div className="bg-red-100 text-red-800 px-5 py-3 rounded-lg flex justify-between items-center shadow-md border border-red-200 animate-fade-in">
@@ -277,20 +311,28 @@ const AdminPanel = () => {
               )}
 
               {/* Search User by Email */}
-              <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col sm:flex-row gap-4 border border-gray-100">
-                <input
-                  type="email"
-                  placeholder="Search user by email..."
-                  value={searchEmail}
-                  onChange={e => setSearchEmail(e.target.value)}
-                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 outline-none"
-                />
-                <button
-                  onClick={handleSearch}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 font-semibold"
-                >
-                  Search
-                </button>
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                <h2 className="text-xl font-bold text-gray-800 mb-4">Search Member</h2>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <input
+                      type="email"
+                      placeholder="Enter member's email address..."
+                      value={searchEmail}
+                      onChange={e => setSearchEmail(e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 outline-none bg-gray-50"
+                    />
+                  </div>
+                  <button
+                    onClick={handleSearch}
+                    className="bg-blue-600 text-white px-8 py-3 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 font-semibold flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Search
+                  </button>
+                </div>
               </div>
 
               {/* Edit User Form */}
@@ -355,8 +397,13 @@ const AdminPanel = () => {
 
               {/* User List */}
               <div className="bg-white shadow-lg rounded-xl p-6 border border-gray-100">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">Registered Members</h2>
-                <div className="space-y-4 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar"> {/* Increased max-height, added custom-scrollbar */}
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800">Registered Members</h2>
+                  <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                    {users.length} total
+                  </span>
+                </div>
+                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar rounded-lg"> {/* Increased height for better view */}
                   {loading ? (
                     <div className="text-center text-gray-500 py-10 text-lg">Loading users...</div>
                   ) : users.length === 0 ? (
@@ -365,23 +412,29 @@ const AdminPanel = () => {
                     users.map(user => (
                       <div
                         key={user.id}
-                        className="bg-gray-50 hover:bg-gray-100 transition-colors shadow-sm rounded-lg p-5 flex flex-col sm:flex-row items-center sm:items-start gap-4 border border-gray-200"
+                        className="bg-white hover:bg-gray-50 transition-all duration-200 shadow-sm rounded-xl p-5 flex flex-col sm:flex-row items-center sm:items-start gap-4 border border-gray-200 hover:border-blue-300"
                       >
-                        {user.photoUrl && (
-                          <img
-                            src={`${API_BASE_URL}/${user.photoUrl}`} // Use API_BASE_URL here
-                            alt={user.name}
-                            className="w-20 h-20 rounded-full object-cover border-4 border-blue-400 flex-shrink-0"
-                            onError={(e) => { e.currentTarget.src = `https://placehold.co/80x80/cccccc/white?text=No+Img`; }}
-                          />
-                        )}
+                        <div className="relative">
+                          {user.photoUrl ? (
+                            <img
+                              src={`${API_BASE_URL}/${user.photoUrl}`}
+                              alt={user.name}
+                              className="w-20 h-20 rounded-full object-cover border-4 border-blue-400 flex-shrink-0 bg-blue-50"
+                              onError={(e) => { e.currentTarget.src = `https://placehold.co/80x80/cccccc/white?text=${user.name.charAt(0)}`; }}
+                            />
+                          ) : (
+                            <div className="w-20 h-20 rounded-full flex items-center justify-center bg-blue-100 border-4 border-blue-400 text-blue-600 text-2xl font-bold">
+                              {user.name.charAt(0)}
+                            </div>
+                          )}
+                        </div>
                         <div className="flex-1 text-center sm:text-left">
                           <div className="font-bold text-xl text-gray-800">{user.name}</div>
                           <div className="text-sm text-gray-600">{user.email}</div>
                           <div className="text-sm text-gray-600">{user.phone}</div>
                           <div className="text-md text-blue-700 font-semibold mt-1">{user.designation}</div>
                         </div>
-                        <div className="flex flex-row sm:flex-col gap-3 mt-4 sm:mt-0">
+                        <div className="flex flex-row sm:flex-col gap-3">
                           <button
                             onClick={() => handleEdit(user)}
                             className="bg-yellow-500 text-white px-5 py-2 rounded-lg shadow-md hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105 text-sm font-semibold"
@@ -399,44 +452,6 @@ const AdminPanel = () => {
                     ))
                   )}
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: Dashboard */}
-          <div className="lg:w-1/3 w-full space-y-6">
-            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-              <div className="flex flex-col gap-2">
-                <h2 className="text-xl font-bold text-gray-900">Dashboard Summary</h2>
-                <p className="text-sm text-gray-500">
-                  Last updated: {new Date().toLocaleTimeString()}
-                </p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 mt-4">
-                <DashboardCard
-                  title="Total Users"
-                  value={dashboardStats.totalUsers.toLocaleString()}
-                  description="All registered members"
-                  icon="👥"
-                />
-                <DashboardCard
-                  title="Health Advisors"
-                  value={dashboardStats.healthAdvisors.toLocaleString()}
-                  description="Health Insurance Advisors"
-                  icon="⚕️"
-                />
-                <DashboardCard
-                  title="Wealth Managers"
-                  value={dashboardStats.wealthManagers.toLocaleString()}
-                  description="Wealth Management Team"
-                  icon="📈"
-                />
-                <DashboardCard
-                  title="Designated Users"
-                  value={dashboardStats.designatedUsers.toLocaleString()}
-                  description="Users with specific roles"
-                  icon="🤝"
-                />
               </div>
             </div>
           </div>
