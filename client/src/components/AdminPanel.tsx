@@ -14,7 +14,7 @@ type DashboardStats = {
   totalUsers: number;
   healthAdvisors: number;
   wealthManagers: number;
-  designatedUsers: number; // New stat for users with either designation
+  designatedUsers: number;
 };
 
 // DashboardCard Component
@@ -49,12 +49,8 @@ const AdminPanel = () => {
   const [confirmMessage, setConfirmMessage] = useState('');
 
   const navigate = useNavigate();
-
-  // Get API_URL from environment variables.
-  // It's best practice to define VITE_API_URL without a trailing slash in your .env file (e.g., VITE_API_URL=http://localhost:3001)
   const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-  // Updated Dashboard Stats Calculation
   const calculateDashboardStats = useCallback((usersList: User[]) => {
     let totalUsers = usersList.length;
     let healthAdvisors = 0;
@@ -62,7 +58,6 @@ const AdminPanel = () => {
     let designatedUsers = 0;
 
     usersList.forEach(user => {
-      // Always treat designation as array of trimmed strings
       const designations = typeof user.designation === 'string'
         ? user.designation.split(',').map(d => d.trim())
         : Array.isArray(user.designation)
@@ -84,10 +79,10 @@ const AdminPanel = () => {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}api/users`);
+      const response = await fetch(`${API_BASE_URL}/api/users`);
       const data = await response.json();
       setUsers(data);
-      calculateDashboardStats(data); // Always update stats after fetch
+      calculateDashboardStats(data);
     } catch (err) {
       setError('Failed to fetch users');
     } finally {
@@ -95,18 +90,15 @@ const AdminPanel = () => {
     }
   }, [API_BASE_URL, calculateDashboardStats]);
 
-  // Effect for fetching users and checking token expiration every 60 seconds
   useEffect(() => {
-    fetchUsers(); // Initial fetch only
+    fetchUsers();
   }, [fetchUsers]);
 
-  // Effect for 1-second backend ping for status indicator
   useEffect(() => {
     const pingBackend = async () => {
       try {
         setBackendStatus('pinging');
-        // Construct URL with leading slash for the path
-        const response = await fetch(`${API_BASE_URL}api/ping`); // Assuming a lightweight /api/ping endpoint
+        const response = await fetch(`${API_BASE_URL}/api/ping`);
         if (response.ok) {
           setBackendStatus('online');
         } else {
@@ -117,18 +109,17 @@ const AdminPanel = () => {
       }
     };
 
-    pingBackend(); // Initial ping
-    const pingInterval = setInterval(pingBackend, 10000); // Ping every 1 second
+    pingBackend();
+    const pingInterval = setInterval(pingBackend, 10000);
 
     return () => clearInterval(pingInterval);
-  }, [API_BASE_URL]); // Dependency array for ping effect
+  }, [API_BASE_URL]);
 
-  // Secure logout: call backend to clear cookie, then redirect
   const handleLogout = async () => {
     try {
-      await fetch(`${API_BASE_URL}api/admin/logout`, {
+      await fetch(`${API_BASE_URL}/api/admin/logout`, {
         method: 'POST',
-        credentials: 'include', // Ensure cookies are sent
+        credentials: 'include',
       });
     } catch (err) {
       // Ignore errors, just redirect
@@ -140,12 +131,12 @@ const AdminPanel = () => {
     setConfirmMessage('Are you sure you want to delete this user? This action cannot be undone.');
     setConfirmAction(() => async () => {
       try {
-        await fetch(`${API_BASE_URL}api/users/${id}`, {
+        await fetch(`${API_BASE_URL}/api/users/${id}`, {
           method: 'DELETE',
         });
         const updatedUsers = users.filter(u => u.id !== id);
         setUsers(updatedUsers);
-        calculateDashboardStats(updatedUsers); // Update stats immediately
+        calculateDashboardStats(updatedUsers);
         setError(null);
       } catch (err) {
         setError('Failed to delete user');
@@ -179,7 +170,7 @@ const AdminPanel = () => {
     if (!editingUser) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}api/users/${editingUser.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/${editingUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editingUser),
@@ -190,7 +181,7 @@ const AdminPanel = () => {
 
       const updatedUsers = users.map(u => u.id === editingUser.id ? data.user : u);
       setUsers(updatedUsers);
-      calculateDashboardStats(updatedUsers); // Update stats immediately
+      calculateDashboardStats(updatedUsers);
       setEditingUser(null);
       setError(null);
     } catch (err: any) {
@@ -221,11 +212,9 @@ const AdminPanel = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Fixed Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="bg-white shadow-md">
+        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-center py-4 sm:h-16 gap-4 sm:gap-0">
-            {/* Left: Title and Status */}
             <div className="flex items-center gap-4 w-full sm:w-auto justify-between">
               <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
               <div className={`
@@ -244,7 +233,6 @@ const AdminPanel = () => {
               </div>
             </div>
 
-            {/* Right: Navigation */}
             <nav className="flex items-center gap-4 w-full sm:w-auto justify-center">
               <a href="/" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100">
                 Home
@@ -263,9 +251,8 @@ const AdminPanel = () => {
       </header>
 
 
-      <main className="pt-24 px-4 sm:px-6 lg:px-8 pb-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Dashboard Stats at the top */}
+      <main className="px-4 sm:px-6 lg:px-8 pb-8 pt-8">
+        <div className="w-full mx-auto">
           <div className="mb-8 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
             <div className="flex flex-col gap-2 mb-4">
               <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
@@ -299,7 +286,6 @@ const AdminPanel = () => {
             </div>
           </div>
 
-          {/* Main Content Area */}
           <div className="bg-gray-50 rounded-xl p-6">
             <div className="w-full space-y-6">
 
@@ -310,7 +296,6 @@ const AdminPanel = () => {
                 </div>
               )}
 
-              {/* Search User by Email */}
               <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
                 <h2 className="text-xl font-bold text-gray-800 mb-4">Search Member</h2>
                 <div className="flex flex-col sm:flex-row gap-4">
@@ -335,7 +320,6 @@ const AdminPanel = () => {
                 </div>
               </div>
 
-              {/* Edit User Form */}
               {editingUser && (
                 <form onSubmit={handleUpdate} className="bg-white shadow-lg p-8 rounded-xl mb-6 border border-gray-100">
                   <h2 className="text-2xl font-bold text-gray-800 mb-6">Edit User Details</h2>
@@ -372,7 +356,7 @@ const AdminPanel = () => {
                       className="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-700 outline-none bg-white"
                       required
                     >
-                      <option value="">Select Designation</option> {/* Added default option */}
+                      <option value="">Select Designation</option>
                       <option value="Health insurance advisor">Health Insurance Advisor</option>
                       <option value="Wealth Manager">Wealth Manager</option>
                     </select>
@@ -395,7 +379,6 @@ const AdminPanel = () => {
                 </form>
               )}
 
-              {/* User List */}
               <div className="bg-white shadow-lg rounded-xl p-6 border border-gray-100">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold text-gray-800">Registered Members</h2>
@@ -403,7 +386,7 @@ const AdminPanel = () => {
                     {users.length} total
                   </span>
                 </div>
-                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar rounded-lg"> {/* Increased height for better view */}
+                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar rounded-lg">
                   {loading ? (
                     <div className="text-center text-gray-500 py-10 text-lg">Loading users...</div>
                   ) : users.length === 0 ? (
@@ -458,7 +441,6 @@ const AdminPanel = () => {
         </div>
       </main>
 
-      {/* Custom Confirmation Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full transform scale-95 animate-scale-in border border-gray-200">
