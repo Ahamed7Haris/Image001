@@ -185,9 +185,9 @@ const ADMIN_TOKEN_SECRET = process.env.ADMIN_TOKEN_SECRET || 'supersecret';
 const ADMIN_COOKIE_NAME = 'admin_token';
 const ADMIN_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax',
-  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  secure: true, // must be true for cross-site cookies
+  sameSite: 'none', // must be 'none' for cross-site cookies
+  maxAge: 24 * 60 * 60 * 1000,
   signed: true,
 };
 
