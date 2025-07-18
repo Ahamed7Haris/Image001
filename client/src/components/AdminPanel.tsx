@@ -200,7 +200,7 @@ const AdminPanel = () => {
       </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24 md:mt-28 mt-56">
         <div className="space-y-6">
           {/* Dashboard Stats */}
           <section className="mt-4">
