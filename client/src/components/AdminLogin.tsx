@@ -17,15 +17,10 @@ const AdminLogin = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
+        credentials: 'include', // Send/receive cookies
       });
 
       if (res.ok) {
-        const loginData = {
-          isAdmin: true,
-          loginTime: new Date().getTime(),
-          expiresIn: 24 * 60 * 60 * 1000, // 24 hours
-        };
-        localStorage.setItem('adminAuth', JSON.stringify(loginData));
         navigate('/admin');
       } else {
         setError('Invalid credentials');

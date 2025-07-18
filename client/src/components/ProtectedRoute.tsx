@@ -1,29 +1,35 @@
+// Fix for Vite env typing
+interface ImportMeta {
+  env: {
+    VITE_API_URL: string;
+  };
+}
+import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const checkAuth = () => {
-    const authData = localStorage.getItem('adminAuth');
-    if (!authData) return false;
-
-    try {
-      const { loginTime, expiresIn } = JSON.parse(authData);
-      const now = new Date().getTime();
-      const isExpired = now - loginTime > expiresIn;
-
-      if (isExpired) {
-        // Clear expired login
-        localStorage.removeItem('adminAuth');
-        return false;
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const API_URL = import.meta.env.VITE_API_URL;
+        const res = await fetch(`${API_URL}api/admin-auth`, {
+          method: 'GET',
+          credentials: 'include',
+        });
+        setIsAuthenticated(res.ok);
+      } catch {
+        setIsAuthenticated(false);
+      } finally {
+        setAuthChecked(true);
       }
+    };
+    checkAuth();
+  }, []);
 
-      return true;
-    } catch (err) {
-      localStorage.removeItem('adminAuth');
-      return false;
-    }
-  };
-
-  return checkAuth() ? children : <Navigate to="/admin-login" replace />;
+  if (!authChecked) return null; // Or a loading spinner
+  return isAuthenticated ? children : <Navigate to="/admin-login" replace />;
 };
 
 export default ProtectedRoute;

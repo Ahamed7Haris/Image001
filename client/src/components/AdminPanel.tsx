@@ -123,8 +123,16 @@ const AdminPanel = () => {
     return () => clearInterval(pingInterval);
   }, [API_BASE_URL]); // Dependency array for ping effect
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminAuth');
+  // Secure logout: call backend to clear cookie, then redirect
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API_BASE_URL}api/admin/logout`, {
+        method: 'POST',
+        credentials: 'include', // Ensure cookies are sent
+      });
+    } catch (err) {
+      // Ignore errors, just redirect
+    }
     navigate('/admin-login');
   };
 

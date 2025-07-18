@@ -4,6 +4,7 @@ const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const allowedOrigins = [
   'https://abuinshah.netlify.app'        // For production
 ];
@@ -37,6 +38,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(cookieParser(process.env.ADMIN_TOKEN_SECRET || 'supersecret'));
 
 app.options('*', cors());
 
@@ -178,6 +180,24 @@ app.post('/api/send-posters', upload.single('template'), async (req, res) => {
   }
 });
 
+
+const ADMIN_TOKEN_SECRET = process.env.ADMIN_TOKEN_SECRET || 'supersecret';
+const ADMIN_COOKIE_NAME = 'admin_token';
+const ADMIN_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  signed: true,
+};
+
+const crypto = require('crypto');
+
+function generateToken() {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+// Admin login: set secure cookie
 app.post('/api/admin-login', (req, res) => {
   const { username, password } = req.body;
   const validUsername = process.env.ADMIN_USERNAME;
@@ -185,10 +205,28 @@ app.post('/api/admin-login', (req, res) => {
 
   if (!validUsername || !validPassword) return res.status(500).json({ error: 'Admin credentials not configured' });
   if (username === validUsername && password === validPassword) {
-    res.json({ success: true, token: 'admin-token', expiresIn: '1h' });
+    const token = generateToken();
+    res.cookie(ADMIN_COOKIE_NAME, token, ADMIN_COOKIE_OPTIONS);
+    res.json({ success: true });
   } else {
     res.status(401).json({ error: 'Invalid credentials' });
   }
+});
+
+// Admin auth check: verify cookie
+app.get('/api/admin-auth', (req, res) => {
+  const token = req.signedCookies[ADMIN_COOKIE_NAME];
+  if (token) {
+    res.json({ authenticated: true });
+  } else {
+    res.status(401).json({ authenticated: false });
+  }
+});
+
+// Admin logout: clear cookie
+app.post('/api/admin/logout', (req, res) => {
+  res.clearCookie(ADMIN_COOKIE_NAME, { ...ADMIN_COOKIE_OPTIONS, maxAge: 0 });
+  res.json({ success: true });
 });
 
 app.put('/api/users/:id', async (req, res) => {
